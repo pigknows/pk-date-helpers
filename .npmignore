@@ -1,0 +1,8 @@
+*.test.ts
+scripts/
+src/
+.babelrc
+.env-config.js
+jest.tsconfig.json
+tslint.json
+webpack.config.js

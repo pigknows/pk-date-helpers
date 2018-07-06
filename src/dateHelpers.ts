@@ -1,0 +1,374 @@
+import { DateTime, DateObjectUnits } from 'luxon';
+const NEWSHAM_DAY_ZERO = '1985-06-05';
+const THOUSAND_DAY_ZERO = '1971-09-27';
+
+// reference: https://bitbucket.org/pigknowsdev/documentation/src/master/product%20specs/DATE_FORMATS.md
+
+/* CONTENT:
+  - padNum (helper function to add leading zeros to numbers)
+  - dateFormatsMap (object mapper that takes format type and returns either luxon format string or conversion function)
+  - convertDateToRegularString
+  - converDateToFormatType
+  - convertShortcutDate
+*/
+
+function padNum(input: number | string, places = 2) {
+  let temp = input.toString();
+  while (temp.length < places) {
+    temp = `0${temp}`;
+  }
+  return temp;
+}
+
+export type FormatNames = 'AMERICAN' | 'american' | 'American'
+  | 'EUROPEAN' | 'european' | 'European'
+  | 'ISO' | 'iso' | 'Iso'
+  | 'JULIAN' | 'Julian' | 'julian'
+  | 'NEWSHAM' | 'Newsham' | 'newsham'
+  | 'REGULAR' | 'Regular' | 'regular'
+  | 'THOUSAND' | 'Thousand' | 'thousand';
+
+// dateFormatsMap requires Regular-like input
+// convert to regular first using helper function below
+const dateFormatsMap = {
+  AMERICAN: 'MM-dd-yyyy',
+  EUROPEAN: 'dd-MM-yyyy',
+  ISO: 'yyyy-MM-dd',
+  JULIAN: 'yy-ooo',
+  NEWSHAM: (date: string): string => {
+    const temp = date.toString().replace(/\D/g, '');
+    const luxonDate = DateTime.fromObject({
+      day: parseInt(temp.slice(6, 8)),
+      month: parseInt(temp.slice(4, 6)),
+      year: parseInt(temp.slice(0, 4)),
+    });
+    const dayZero = NEWSHAM_DAY_ZERO.toString().replace(/\D/g, '');
+    const luxonZeroDay = DateTime.fromObject({
+      day: parseInt(dayZero.slice(6, 8)),
+      month: parseInt(dayZero.slice(4, 6)),
+      year: parseInt(dayZero.slice(0, 4)),
+    });
+
+    const diffInDays = Math.abs(luxonZeroDay.diff(luxonDate, 'days').as('days'));
+    const thousands = Math.floor(diffInDays / 1000);
+    const dayInYear = Math.floor(diffInDays - (thousands * 1000));
+
+    return `${padNum(thousands)}${padNum(dayInYear, 3)}`;
+  },
+  REGULAR: 'yyyy-MM-dd',
+  THOUSAND: (date: string): string => {
+    const temp = date.toString().replace(/\D/g, '');
+    const luxonDate = DateTime.fromObject({
+      day: parseInt(temp.slice(6, 8)),
+      month: parseInt(temp.slice(4, 6)),
+      year: parseInt(temp.slice(0, 4)),
+    });
+    const dayZero = THOUSAND_DAY_ZERO.toString().replace(/\D/g, '');
+    const luxonZeroDay = DateTime.fromObject({
+      day: parseInt(dayZero.slice(6)),
+      month: parseInt(dayZero.slice(4, 6)),
+      year: parseInt(dayZero.slice(0, 4)),
+    });
+
+    const diffInDays = Math.abs(luxonZeroDay.diff(luxonDate, 'days').as('days'));
+    const thousands = Math.floor(diffInDays / 1000);
+    const dayInYear = Math.floor(diffInDays - (thousands * 1000));
+
+    return `${padNum(thousands)}${padNum(dayInYear, 3)}`;
+  },
+};
+
+export function convertDateToRegularString(inputFormat: FormatNames, date: string): string {
+  if (!date) {
+    return '';
+  }
+  let dateStr = date.toString().replace(/\D/g, '');
+  const dateConfigObj : DateObjectUnits = {};
+  switch (inputFormat.toUpperCase()) {
+    case 'AMERICAN':
+      if (dateStr.length !== 8) {
+        dateStr = convertShortcutDate('AMERICAN', dateStr).replace(/\D/g, '');
+      } else if (date.length === 10 && (date[4] === '-')) {
+        // regular format was entered. convert.
+        dateConfigObj.month = parseInt(date.slice(5,7));
+        dateConfigObj.day = parseInt(date.slice(8,10));
+        dateConfigObj.year = parseInt(date.slice(0,4));
+        break;
+      }
+      dateConfigObj.month = parseInt(dateStr.slice(0, 2));
+      dateConfigObj.day = parseInt(dateStr.slice(2, 4));
+      dateConfigObj.year = parseInt(dateStr.slice(4, 8));
+      break;
+    case 'EUROPEAN':
+      if (dateStr.length !== 8) {
+        dateStr = convertShortcutDate('European', dateStr).replace(/\D/g, '');
+      } else if (date.length === 10 && (date[4] === '-')) {
+        // regular format was entered. convert.
+        dateConfigObj.month = parseInt(date.slice(5,7));
+        dateConfigObj.day = parseInt(date.slice(8,10));
+        dateConfigObj.year = parseInt(date.slice(0,4));
+        break;
+      }
+      dateConfigObj.month = parseInt(dateStr.slice(2, 4));
+      dateConfigObj.day = parseInt(dateStr.slice(0, 2));
+      dateConfigObj.year = parseInt(dateStr.slice(4, 8));
+      break;
+    case 'ISO':
+    case 'REGULAR':
+      if (dateStr.length !== 8) {
+        dateStr = convertShortcutDate(inputFormat, dateStr).replace(/\D/g, '');
+      }
+      dateConfigObj.year = parseInt(dateStr.slice(0, 4));
+      dateConfigObj.month = parseInt(dateStr.slice(4, 6));
+      dateConfigObj.day = parseInt(dateStr.slice(6, 8));
+      break;
+    case 'JULIAN':
+      if (dateStr.length !== 5) {
+        dateStr = convertShortcutDate(inputFormat, dateStr).replace(/\D/g, '');
+      }
+      dateConfigObj.year = parseInt(`20${dateStr.slice(0, 2)}`);
+      dateConfigObj.ordinal = parseInt(dateStr.slice(2, 6));
+      break;
+    case 'NEWSHAM':
+    case 'THOUSAND':
+      if (dateStr.length !== 5) {
+        dateStr = convertShortcutDate(inputFormat, dateStr).replace(/\D/g, '');
+      }
+      const cycles = parseInt(dateStr.slice(0, 2));
+      const leftover = parseInt(dateStr.slice(2));
+      const dayZero = inputFormat.toUpperCase() === 'NEWSHAM'
+        ? NEWSHAM_DAY_ZERO
+        : THOUSAND_DAY_ZERO;
+      return DateTime.fromISO(dayZero).plus({ days: (cycles * 1000) + leftover }).toFormat('yyyy-MM-dd');
+    default:
+      throw new Error(`Unknown date format: ${inputFormat}.`)
+  }
+
+  return DateTime.fromObject(dateConfigObj).toLocal().toFormat('yyyy-MM-dd');
+}
+
+export function convertDateToFormatType(
+  inputFormatType: FormatNames,
+  destinationFormatType: FormatNames,
+  date: string): string {
+
+  if (!date || !inputFormatType || !destinationFormatType) {
+    console.error('Trying to convert with missing fields.')
+    return '';
+  }
+
+  const isInRegular = /^\d{4}-\d{2}-\d{2}$/.test(date.toString());
+  let dateConvertedToRegular = isInRegular
+    ? date.toString()
+    : convertDateToRegularString(inputFormatType, date);
+
+  if (!dateConvertedToRegular) {
+    return '';
+  }
+  
+  if (dateConvertedToRegular.replace(/\D/g, '').length !== 8 ||
+    !(/^\d{8}$/).test(dateConvertedToRegular.replace(/\D/g, ''))) {
+      console.warn(`input '${date}' does match inputFormat '${inputFormatType}' or any of its shortcuts.`);
+      return date.toString();
+    }
+  
+  const formatter = dateFormatsMap[destinationFormatType.toUpperCase()];
+  if (!formatter) {
+    console.warn(`${destinationFormatType} is not a valid date format.`);
+    return date.toString();
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateConvertedToRegular)) {
+    return typeof formatter === 'string'
+      ? DateTime.fromISO(dateConvertedToRegular).toFormat(formatter)
+      : formatter(dateConvertedToRegular);
+  } else {
+    return date.toString();
+  }
+};
+
+function detectIfFutureDate(regularDate) {
+  const currentDateTime = DateTime.local();
+  const comparedDateTime = DateTime.fromObject({
+    day: parseInt(regularDate.slice(8, 10)),
+    month: parseInt(regularDate.slice(5, 7)),
+    year: parseInt(regularDate.slice(0, 4)),
+  });
+  return currentDateTime < comparedDateTime
+}
+
+// shortcut used must belong to the destination formatType.
+// example: 4 digit American format means something different than 4 digit European
+export function convertShortcutDate(formatType: FormatNames, date: string) {
+  const inputDate = date.toString().replace(/\D/g, '');
+  const currentYear = (new Date()).getFullYear();
+  const currentYearEnd = currentYear.toString().slice(2);
+
+  // all formats are allowed to convert from regular to their desired format
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date.toString())) {
+    return convertDateToFormatType('REGULAR', formatType, inputDate);
+  }
+
+  /* all year-less shortcuts should be converted to previous year if future date */
+  switch (formatType.toUpperCase()) {
+    case 'AMERICAN':
+    case 'EUROPEAN':
+      // allowed shortcuts: MMdd and MMddyy (American)
+      // allowed shortcuts: ddMM and ddMMyy (European)
+      if (inputDate.length === 4) {
+        const month = formatType.toUpperCase() === 'EUROPEAN'
+          ? inputDate.slice(2, 4)
+          : inputDate.slice(0, 2);
+        const day = formatType.toUpperCase() === 'EUROPEAN'
+          ? inputDate.slice(0, 2)
+          : inputDate.slice(2, 4);
+        return detectIfFutureDate(`${currentYear}-${month}-${day}`)
+          ? `${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${currentYear-1}`
+          : `${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${currentYear}`;
+      } else if (inputDate.length === 6) {
+        return `${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-20${inputDate.slice(4)}`;
+      } else {
+        return inputDate;
+      }
+    case 'JULIAN':
+      if (inputDate.length < 4) {
+        const paddedDate = `${currentYearEnd}-${padNum(inputDate, 3)}`;
+        const regularizedDate = convertDateToFormatType('JULIAN', 'Regular', paddedDate);
+        return detectIfFutureDate(regularizedDate)
+          ? `${(currentYear - 1).toString().slice(2)}-${padNum(inputDate, 3)}`
+          : `${currentYearEnd}-${padNum(inputDate, 3)}`;
+      } else if (inputDate.length === 4) {
+        const luxonDate = DateTime.fromObject({
+          year: currentYear,
+          month: parseInt(inputDate.slice(0, 2)),
+          day: parseInt(inputDate.slice(2)),
+        });
+        return detectIfFutureDate(luxonDate.toFormat('yyyy-MM-dd'))
+          ? `${(currentYear - 1).toString().slice(2)}-${luxonDate.toFormat('ooo')}`
+          : `${currentYearEnd}-${luxonDate.toFormat('ooo')}`;
+      } else if (inputDate.length === 5) {
+        return `${inputDate.slice(0, 2)}-${inputDate.slice(2)}`;
+      } else if (inputDate.length === 6) {
+        const luxonDate = DateTime.fromObject({
+          year: parseInt(inputDate.slice(0, 2)),
+          month: parseInt(inputDate.slice(2, 4)),
+          day: parseInt(inputDate.slice(4)),
+        });
+        return `${luxonDate.toFormat('yy')}-${luxonDate.toFormat('ooo')}`;
+      } else if (inputDate.length === 8) {
+        return convertDateToFormatType('REGULAR', formatType, inputDate);
+      } else {
+        return inputDate;
+      }
+    case 'ISO':
+    case 'REGULAR':
+      // allowed shortcuts: MMdd and yyMMdd
+      if (inputDate.length === 4) {
+        const date = `${currentYear}-${inputDate.slice(0, 2)}-${inputDate.slice(2)}`;
+        return detectIfFutureDate(date)
+          ? `${currentYear-1}-${inputDate.slice(0, 2)}-${inputDate.slice(2)}`
+          : date;
+      } else if (inputDate.length === 6) {
+        return `20${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${inputDate.slice(4)}`;
+      } else {
+        return inputDate;
+      }
+    case 'NEWSHAM':
+      if (inputDate.length === 4) {
+        return `1${inputDate}`
+      } else if (inputDate.length === 6) {
+        const regularDate = `20${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${inputDate.slice(4)}`;
+        return convertDateToFormatType('REGULAR', 'NEWSHAM', regularDate);
+      } else {
+        return inputDate;
+      }
+    case 'THOUSAND':
+      const todayThousand = convertDateToFormatType('REGULAR', 'THOUSAND', DateTime.local().toFormat('yyyy-MM-dd'));
+      const currentCycle = todayThousand.slice(0, 2);
+      if (inputDate.length < 4) {
+        const paddedDate = `${currentCycle}${padNum(inputDate, 3)}`;
+        const regularizedDate = convertDateToFormatType('THOUSAND', 'REGULAR', paddedDate);
+        return detectIfFutureDate(regularizedDate)
+          ? `${parseInt(currentCycle)-1}${padNum(inputDate, 3)}`
+          : paddedDate;
+      } else if (inputDate.length === 4) {
+        const regularDate = `${currentYear}-${inputDate.slice(0, 2)}-${inputDate.slice(2)}`;
+        return detectIfFutureDate(regularDate)
+          ? convertDateToFormatType('REGULAR', 'THOUSAND', regularDate.replace(currentYear.toString(), (currentYear-1).toString()))
+          : convertDateToFormatType('REGULAR', 'THOUSAND', regularDate);
+      } else if (inputDate.length === 6) {
+        const regularDate = `20${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${inputDate.slice(4)}`;
+        return convertDateToFormatType('REGULAR', 'THOUSAND', regularDate);
+      } else {
+        return inputDate;
+      }
+    default:
+      return inputDate;
+  }
+}
+
+export function convertPercentDateFormat(destinationFormat: string, regularDate: string) {
+  if (destinationFormat === 'default') {
+    console.error('"default" format entered for percent date format. Please provide fallback.');
+  }
+
+  if (destinationFormat.indexOf('%') === -1) {
+    console.error(`${destinationFormat} does not match percentage format type.`);
+  }
+
+  switch (destinationFormat.replace(/\s/g, '').replace(/\,/g, '')) {
+    case '%b%d':
+      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('MMMdd');
+    case '%b%d%y':
+      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('MMMdd,yy');
+    case '%b%d%Y':
+      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('MMMdd,yyyy');
+    case '%d%b':
+      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('ddMMM');
+    case '%d%b%y':
+      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('ddMMMyy');
+    case '%d%b%Y':
+      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('ddMMMyyyy');
+    case '%d-%m-%y':
+      return convertDateToFormatType('REGULAR', 'EUROPEAN', regularDate).slice(0, 9);
+    case '%d/%m/%y':
+      return convertDateToFormatType('REGULAR', 'EUROPEAN', regularDate).slice(0, 9).replace(/\-/g, '/');
+    case '%d-%m-%Y':
+      return convertDateToFormatType('REGULAR', 'EUROPEAN', regularDate);
+    case '%d/%m/%Y':
+      return convertDateToFormatType('REGULAR', 'EUROPEAN', regularDate).replace(/\-/g, '/');
+    case '%m-%d':
+      return convertDateToFormatType('REGULAR', 'AMERICAN', regularDate).slice(0, 5);
+    case '%m/%d':
+      return convertDateToFormatType('REGULAR', 'AMERICAN', regularDate).slice(0, 5).replace(/\-/g, '/');
+    case '%m-%d-%y':
+      return convertDateToFormatType('REGULAR', 'AMERICAN', regularDate).slice(0, 9);
+    case '%m/%d/%y':
+      return convertDateToFormatType('REGULAR', 'AMERICAN', regularDate).slice(0, 9).replace(/\-/g, '/');
+    case '%m-%d-%Y':
+      return convertDateToFormatType('REGULAR', 'AMERICAN', regularDate);
+    case '%m/%d/%Y':
+      return convertDateToFormatType('REGULAR', 'AMERICAN', regularDate).replace(/\-/g, '/');
+    case '%j': // 3-digit julian
+      return convertDateToFormatType('REGULAR', 'JULIAN', regularDate).slice(2);
+    case '%J': // full julian
+      return convertDateToFormatType('REGULAR', 'JULIAN', regularDate);
+    case '%N': // full newsham
+      return convertDateToFormatType('REGULAR', 'NEWSHAM', regularDate);
+    case '%n':
+    case '%t': // 3-digit thousand or 3-digit newsham (same because cycle is removed)
+      return convertDateToFormatType('REGULAR', 'THOUSAND', regularDate).slice(2);
+    case '%T': // full thousand
+      return convertDateToFormatType('REGULAR', 'THOUSAND', regularDate);
+    case '%y-%m-%d': // 2-digit year - month - day
+      return regularDate.slice(2);
+    case '%y/%m/%d': // 2-digit year / month / day
+      return regularDate.slice(2).replace(/\-/g, '/');
+    case '%Y-%m-%d':
+      return regularDate;
+    case '%Y/%m/%d':
+      return regularDate.replace(/\-/g, '/');
+    default:
+      return regularDate;
+  }
+}
