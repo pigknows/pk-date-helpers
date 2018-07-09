@@ -10,6 +10,7 @@ module.exports = {
   entry: APP_DIR + 'index.ts',
   output: {
     filename: 'index.js',
+    globalObject: 'typeof self !== \'undefined\' ? self : this',
     path: BUILD_DIR,
     library: 'pk-date-helpers',
     libraryTarget: 'umd',
