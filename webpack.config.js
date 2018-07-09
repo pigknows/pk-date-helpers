@@ -6,11 +6,10 @@ const webpack = require('webpack')
 const babelConfig = require('./.babelrc.js');
 
 module.exports = {
-  mode: "production",
+  // mode: "production",
   entry: APP_DIR + 'index.ts',
   output: {
     filename: 'index.js',
-    globalObject: 'typeof self !== \'undefined\' ? self : this',
     path: BUILD_DIR,
     library: 'pk-date-helpers',
     libraryTarget: 'umd',
@@ -35,13 +34,22 @@ module.exports = {
       'process.env': {
         NODE_ENV: JSON.stringify('production')
       }
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      minimize: true,
+      output: {
+        comments: false
+      },
+      sourceMap: {
+        url: 'inline'
+      }
     })
   ],
 
-  optimization: {
-    minimize: true,
-    nodeEnv: 'production',
-  },
+  // optimization: {
+  //   minimize: true,
+  //   nodeEnv: 'production',
+  // },
 
   resolve: {
     extensions: ['.webpack.js', '.jsx', '.js', '.ts', '.tsx']
