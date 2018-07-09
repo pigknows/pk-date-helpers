@@ -8,7 +8,7 @@
       "es2017",
       "dom"
     ],
-    "module": "esnext",
+    "module": "es2017",
     "moduleResolution": "node",
     "noImplicitUseStrict": true,
     "noUnusedLocals": true,
@@ -16,13 +16,9 @@
     "removeComments": true,
     "rootDir": "./",
     "sourceMap": true,
-    "target": "esnext",
+    "target": "es2017",
     "typeRoots": [
-      "node_modules/@types",
-      "src/@types"
+      "node_modules/@types"
     ]
-  },
-  "exclude": [
-    "prod_node_modules"
-  ]
+  }
 }

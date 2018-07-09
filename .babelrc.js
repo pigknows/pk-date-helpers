@@ -1,16 +1,13 @@
-const env = require('./env-config');
-
 module.exports = {
   'env': {
     'production': {
       presets: [
         ['@babel/preset-env', { modules: 'commonjs' }],
-        '@babel/stage-3',
-        '@babel/typescript',
+        '@babel/preset-stage-3',
+        '@babel/preset-typescript',
       ],
       'plugins': [
-        [ 'transform-define', env ],
-        [ 'module-resolver', {
+        [ 'babel-plugin-module-resolver', {
           'extenions': ['.js', '.jsx', '.ts', '.tsx'],
           'root': ['./src']
         }]
@@ -18,13 +15,12 @@ module.exports = {
     },
     'test': {
       presets: [
-        ['@babel/preset-env', { modules: false }],
-        '@babel/stage-3',
-        '@babel/typescript',
+        ['@babel/preset-env', { modules: 'commonjs'}],
+        '@babel/preset-stage-3',
+        '@babel/preset-typescript',
       ],
       'plugins': [
-        [ 'transform-define', env ],
-        [ 'module-resolver', {
+        [ 'babel-plugin-module-resolver', {
           'extenions': ['.js', '.jsx', '.ts', '.tsx'],
           'root': ['./src']
         }]
