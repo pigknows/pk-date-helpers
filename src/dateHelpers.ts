@@ -114,47 +114,15 @@ export function detectFormatType(date, preferStandard = true, ignoreFormats = []
       '%Y-%m-%d': /^\d{4}-\d{2}-\d{2}$/,
     }
 
-  const shortcutMap = preferStandard // in order of preference
-    ? {
-      'REGULAR': [/^\d{4}$/, /^\d{6}$/],
-      'THOUSAND': [/^\d{1}$/, /^\d{2}$/, /^\d{3}$/, /^\d{4}$/, /^\d{6}$/],
-      'AMERICAN': [/^\d{4}$/, /^\d{6}$/],
-      'EUROPEAN': [/^\d{4}$/, /^\d{6}$/],
-      'JULIAN': [/^\d{1}$/, /^\d{2}$/, /^\d{3}$/, /^\d{4}$/, /^\d{5}$/, /^\d{6}$/, /^\d{8}$/],
-      'NEWSHAM': [/^\d{4}$/, /^\d{6}$/],
-    } : {}; // percent dates don't support shortcuts
-
   // remove unneeded formats and set preference for conflicting formats
   ignoreFormats.forEach(format => {
     delete formatMap[format];
-    if (preferStandard && !ignoreShortcuts) {
-      delete shortcutMap[format];
-    }
   });
 
   const standardizedDate = date.toString().replace(/\//g, '-').split('-').map(x => x.replace(/[^a-zA-z0-9]/g, '')).join('-');
-  // test against full formats first
   for (const formatName in formatMap) {
     if (formatMap[formatName].test(standardizedDate)) {
       return formatName;
-    }
-  }
-
-  // test against shortcuts next
-  if (preferStandard && !ignoreShortcuts) {
-    for (const formatName in shortcutMap) {
-      if (shortcutMap[formatName]) {
-        let end;
-        for (let i = 0; i < shortcutMap[formatName].length; i++) {
-          if (shortcutMap[formatName][i].test(standardizedDate)) {
-            end = formatName;
-            break;
-          }
-        };
-        if (end) {
-          return end;
-        }
-      }
     }
   }
 

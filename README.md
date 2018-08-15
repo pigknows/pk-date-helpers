@@ -65,20 +65,10 @@ Detects the format of a string, if it matches a known date format. Optional para
     const generalDetection = detectFormatType(dateString, preferStandardFormats, arrayOfFormatsToIgnore, ignoreShortcuts);
 
     // examples:
-    const detectAStandardFormat = detectFormatType('17001', true, ['THOUSAND']);
-    const detectNonStandardFormat = detectFormatType('001', false, ['%n', '%t']);
+    const detectAStandardFormat = detectFormatType('17001', true, ['THOUSAND']); // ignoring thousand, as this is probably newsham
+    const detectNonStandardFormat = detectFormatType('001', false, ['%n', '%t']); // ignoring %n and %t as this is probably %j
 
-Note that shortcuts *are* supported. You may ignore shortcuts by adding a 4th parameter: boolean `true` to ignore. Format output when using shortcuts will always prefer Regular and Thousand over conflicting formats. For example:
-
-    Shortcut 0101:
-
-    4-digit shortcuts are supported by every single format type. If your date string is '0101', the return value will be 'REGULAR', as that is preferred over other formats.
-
-    Shortcut 12:
-
-    2-digit shortcuts are supported by both THOUSAND and JULIAN formats. If your date string is '12', the return value will be 'THOUSAND', as it is preferred over JULIAN.
-
-The order of preference for shortcuts is: `['REGULAR', 'THOUSAND', 'AMERICAN', 'EUROPEAN', 'JULIAN', 'NEWSHAM']`. You can use the 3rd parameter `ignoreFormats` to override this preference.
+Note that shortcuts *are not* supported for detection. You must use the full version of any format for accurate detection.
 
 #### getConflictingFormatsForType
 Returns an array of formats that may appear the same from a regex / structure perspective. Useful for finding the third parameter in `detectFormatType` above.
