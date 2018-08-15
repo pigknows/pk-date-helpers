@@ -1,4 +1,4 @@
-import { convertDateToFormatType, convertPercentDateFormat, convertShortcutDate } from '../dateHelpers';
+import { convertDateToFormatType, convertPercentDateFormat, convertShortcutDate, convertDateToRegularString } from '../dateHelpers';
 
 // all of these map to November 1, 2017
 const american1 = '11-01-2018';
@@ -265,7 +265,7 @@ describe('Thousand Shortcut Date Conversion', () => {
   });
 });
 
-describe('Report Format conversions', () => {
+describe('Report Format from Regular conversions', () => {
   test('%b%d format', () => {
     expect(convertPercentDateFormat('%b%d', regular1)).toEqual('Nov01');
   });
@@ -371,7 +371,118 @@ describe('Report Format conversions', () => {
   });
 
   test('%y%mm%d', () => {
-    // non-standard format
+    // unsupported format
     expect(convertPercentDateFormat('%y%mm%d', regular1)).toEqual(regular1);
   });
+});
+
+describe('Report Format to Regular conversions', () => {
+  test('%b%d format', () => {
+    expect(convertDateToRegularString('%b%d', 'Nov01')).toEqual(regular1);
+  });
+
+//   test('%b%d%y format', () => {
+//     expect(convertDateToRegularString('%b%d%y', 'Nov0118')).toEqual(regular1);
+//   });
+
+//   test('%b%d%Y format', () => {
+//     expect(convertDateToRegularString('%b%d%Y', 'Nov012018')).toEqual(regular1);
+//   });
+
+//   test('%d%b format', () => {
+//     expect(convertDateToRegularString('%d%b', '01Nov')).toEqual(regular1);
+//   });
+
+//   test('%d%b%y format', () => {
+//     expect(convertDateToRegularString('%d%b%y', '01Nov18')).toEqual(regular1);
+//   });
+
+//   test('%d%b%Y format', () => {
+//     expect(convertDateToRegularString('%d%b%Y', '01Nov2018')).toEqual(regular1);
+//   });
+
+//   test('%d-%m-%y format', () => {
+//     expect(convertDateToRegularString('%d-%m-%y', european1.slice(0, 9))).toEqual(regular1);
+//   });
+
+//   test('%d/%m/%y format', () => {
+//     expect(convertDateToRegularString('%d/%m/%y', european1.slice(0, 9).replace(/\-/g, '/'))).toEqual(regular1);
+//   });
+
+//   test('%d-%m-%Y format', () => {
+//     expect(convertDateToRegularString('%d-%m-%Y', european1)).toEqual(regular1);
+//   });
+
+//   test('%d/%m/%Y format', () => {
+//     expect(convertDateToRegularString('%d/%m/%Y', european1.replace(/\-/g, '/'))).toEqual(regular1);
+//   });
+
+//   test('%m-%d format', () => {
+//     expect(convertDateToRegularString('%m-%d', '11-01')).toEqual(regular1);
+//   });
+
+//   test('%m-%d-%y', () => {
+//     expect(convertDateToRegularString('%m-%d-%y', american1.slice(0, 9))).toEqual(regular1);
+//   });
+
+//   test('%m-%d-%Y', () => {
+//     expect(convertDateToRegularString('%m-%d-%Y', american1)).toEqual(regular1);
+//   });
+
+//   test('%m/%d format', () => {
+//     expect(convertDateToRegularString('%m/%d', '11/01')).toEqual(regular1);
+//   });
+
+//   test('%m/%d/%y', () => {
+//     expect(convertDateToRegularString('%m/%d/%y', american1.slice(0, 9).replace(/\-/g, '/'))).toEqual(regular1);
+//   });
+
+//   test('%m/%d/%Y', () => {
+//     expect(convertDateToRegularString('%m/%d/%Y', american1.replace(/\-/g, '/'))).toEqual(regular1);
+//   });
+
+//   test('%j', () => {
+//     expect(convertDateToRegularString('%j', julian1.slice(3))).toEqual(regular1);
+//   });
+
+//   test('%J', () => {
+//     expect(convertDateToRegularString('%J', julian1)).toEqual(regular1);
+//   });
+
+//   test('%n', () => {
+//     expect(convertDateToRegularString('%n', newsham1.slice(2))).toEqual(regular1);
+//   });
+
+//   test('%N', () => {
+//     expect(convertDateToRegularString('%N', newsham1)).toEqual(regular1);
+//   });
+
+//   test('%t', () => {
+//     expect(convertDateToRegularString('%t', thousand1.slice(2))).toEqual(regular1);
+//   });
+
+//   test('%T', () => {
+//     expect(convertDateToRegularString('%T', thousand1)).toEqual(regular1);
+//   });
+
+//   test('%y-%m-%d', () => {
+//     expect(convertDateToRegularString('%y-%m-%d', regular1.slice(2))).toEqual(regular1);
+//   });
+
+//   test('%Y-%m-%d', () => {
+//     expect(convertDateToRegularString('%Y-%m-%d', regular1)).toEqual(regular1);
+//   });
+
+//   test('%y/%m/%d', () => {
+//     expect(convertDateToRegularString('%y/%m/%d', '18/11/01')).toEqual(regular1);
+//   });
+
+//   test('%Y/%m/%d', () => {
+//     expect(convertDateToRegularString('%Y/%m/%d', regular1.replace(/\-/g, '/'))).toEqual(regular1);
+//   });
+
+//   test('%y%mm%d', () => {
+//     // unsupported format
+//     expect(convertDateToRegularString('%y%mm%d', '80101')).toEqual('80101');
+//   });
 });

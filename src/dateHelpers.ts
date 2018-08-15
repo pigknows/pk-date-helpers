@@ -28,6 +28,13 @@ export type FormatNames = 'AMERICAN' | 'american' | 'American'
   | 'REGULAR' | 'Regular' | 'regular'
   | 'THOUSAND' | 'Thousand' | 'thousand';
 
+export type ReportFormats = '%b%d' | '%b%d%y' |
+  '%b%d%Y' | '%d%b' | '%d%b%y' | '%d%b%Y' | '%d-%m-%y' |
+  '%d/%m/%y' | '%d/%m/%Y' | '%m/%d' | '%m/%d/%y' | '%m/%d/%Y' |
+  '%d-%m-%Y' | '%m-%d' | '%m-%d-%y' | '%m-%d-%Y' | '%j' | 
+  '%J' | '%N' | '%n' | '%t' | '%T' | '%y-%m-%d' | '%Y-%m-%d' |
+  '%y/%m/%d' | '%Y/%m/%d';
+
 // dateFormatsMap requires Regular-like input
 // convert to regular first using helper function below
 const dateFormatsMap = {
@@ -130,7 +137,7 @@ export function detectFormatType(date, preferStandard = true, ignoreFormats = []
   return '';
 }
 
-export function getConflictingFormatsForType(formatType) {
+export function getConflictingFormatsForType(formatType: FormatNames | ReportFormats) {
   if (!formatType || typeof formatType !== 'string') {
     console.error('Please use an existing format type supported by PigKnows.');
     return [];
@@ -172,7 +179,7 @@ export function getConflictingFormatsForType(formatType) {
   return [];
 }
 
-export function convertDateToRegularString(inputFormat: FormatNames, date: string): string {
+export function convertDateToRegularString(inputFormat: FormatNames | ReportFormats, date: string): string {
   if (typeof date !== 'string') {
     console.error('Date must be a string.');
   }
@@ -180,10 +187,12 @@ export function convertDateToRegularString(inputFormat: FormatNames, date: strin
   if (!date) {
     return '';
   }
-  let dateStr = date.toString().replace(/\D/g, '');
+  let dateStr = date.toString().replace(/[^a-zA-Z0-9]/g, '');
   const dateConfigObj : DateObjectUnits = {};
-  switch (inputFormat.toUpperCase()) {
+  switch (inputFormat) {
     case 'AMERICAN':
+    case 'American':
+    case 'american':
       if (dateStr.length !== 8) {
         dateStr = convertShortcutDate('AMERICAN', dateStr).replace(/\D/g, '');
       } else if (date.length === 10 && (date[4] === '-')) {
@@ -198,6 +207,8 @@ export function convertDateToRegularString(inputFormat: FormatNames, date: strin
       dateConfigObj.year = parseInt(dateStr.slice(4, 8));
       break;
     case 'EUROPEAN':
+    case 'European':
+    case 'european':
       if (dateStr.length !== 8) {
         dateStr = convertShortcutDate('European', dateStr).replace(/\D/g, '');
       } else if (date.length === 10 && (date[4] === '-')) {
@@ -212,23 +223,33 @@ export function convertDateToRegularString(inputFormat: FormatNames, date: strin
       dateConfigObj.year = parseInt(dateStr.slice(4, 8));
       break;
     case 'ISO':
+    case 'iso':
     case 'REGULAR':
+    case 'Regular':
+    case 'regular':
       if (dateStr.length !== 8) {
-        dateStr = convertShortcutDate(inputFormat, dateStr).replace(/\D/g, '');
+        dateStr = convertShortcutDate('REGULAR', dateStr).replace(/\D/g, '');
       }
       dateConfigObj.year = parseInt(dateStr.slice(0, 4));
       dateConfigObj.month = parseInt(dateStr.slice(4, 6));
       dateConfigObj.day = parseInt(dateStr.slice(6, 8));
       break;
+    case '%J':
     case 'JULIAN':
+    case 'Julian':
+    case 'julian':
       if (dateStr.length !== 5) {
-        dateStr = convertShortcutDate(inputFormat, dateStr).replace(/\D/g, '');
+        dateStr = convertShortcutDate('JULIAN', dateStr).replace(/\D/g, '');
       }
       dateConfigObj.year = parseInt(`20${dateStr.slice(0, 2)}`);
       dateConfigObj.ordinal = parseInt(dateStr.slice(2, 6));
       break;
     case 'NEWSHAM':
+    case 'Newsham':
+    case 'newsham':
     case 'THOUSAND':
+    case 'Thousand':
+    case 'thousand':
       if (dateStr.length !== 5) {
         dateStr = convertShortcutDate(inputFormat, dateStr).replace(/\D/g, '');
       }
@@ -238,7 +259,51 @@ export function convertDateToRegularString(inputFormat: FormatNames, date: strin
         ? NEWSHAM_DAY_ZERO
         : THOUSAND_DAY_ZERO;
       return DateTime.fromISO(dayZero).plus({ days: (cycles * 1000) + leftover }).toFormat('yyyy-MM-dd');
+    case '%b%d':
+      return DateTime.fromFormat(dateStr, 'MMMdd').toFormat('yyyy-MM-dd');
+    case '%b%d%y':
+      return DateTime.fromFormat(dateStr, 'MMMddyy').toFormat('yyyy-MM-dd');
+    case '%b%d%Y':
+      return DateTime.fromFormat(dateStr, 'MMMddyyyy').toFormat('yyyy-MM-dd');
+    case '%d%b':
+      return DateTime.fromFormat(dateStr, 'ddMMM').toFormat('yyyy-MM-dd');
+    case '%d%b%y':
+      return DateTime.fromFormat(dateStr, 'ddMMMyy').toFormat('yyyy-MM-dd');
+    case '%d%b%Y':
+      return DateTime.fromFormat(dateStr, 'ddMMMyyyy').toFormat('yyyy-MM-dd');
+    case '%d-%m-%y':
+    case '%d/%m/%y':
+      return DateTime.fromFormat(dateStr, 'ddMMyy').toFormat('yyyy-MM-dd');
+    case '%d-%m-%Y':
+    case '%d/%m/%Y':
+      return DateTime.fromFormat(dateStr, 'ddMMyyyy').toFormat('yyyy-MM-dd');
+    case '%m-%d':
+    case '%m/%d':
+      return DateTime.fromFormat(dateStr, 'MMdd').toFormat('yyyy-MM-dd');
+    case '%m-%d-%y':
+    case '%m/%d/%y':
+      return DateTime.fromFormat(dateStr, 'MMddyy').toFormat('yyyy-MM-dd');
+    case '%m-%d-%Y':
+    case '%m/%d/%Y':
+      return DateTime.fromFormat(dateStr, 'MMddyyyy').toFormat('yyyy-MM-dd');
+    case '%j':
+      return convertDateToRegularString('JULIAN', convertShortcutDate('JULIAN', dateStr));
+    case '%N':
+      return convertDateToRegularString('NEWSHAM', dateStr);
+    case '%n':
+      return convertDateToRegularString('NEWSHAM', convertShortcutDate('NEWSHAM', dateStr));
+    case '%t':
+      return convertDateToRegularString('THOUSAND', convertShortcutDate('THOUSAND', dateStr));
+    case '%T':
+      return convertDateToRegularString('THOUSAND', dateStr)
+    case '%y-%m-%d':
+    case '%y/%m/%d':
+      return DateTime.fromFormat(dateStr, 'yyMMdd').toFormat('yyyy-MM-dd');
+    case '%Y-%m-%d':
+    case '%Y/%m/%d':
+    return DateTime.fromFormat(dateStr, 'yyyyMMdd').toFormat('yyyy-MM-dd');
     default:
+      return dateStr;
       console.error(`Unknown date format: ${inputFormat}.`)
   }
 
@@ -246,7 +311,7 @@ export function convertDateToRegularString(inputFormat: FormatNames, date: strin
 }
 
 export function convertDateToFormatType(
-  inputFormatType: FormatNames,
+  inputFormatType: FormatNames | ReportFormats,
   destinationFormatType: FormatNames,
   date: string): string {
 
@@ -270,7 +335,7 @@ export function convertDateToFormatType(
   
   if (dateConvertedToRegular.replace(/\D/g, '').length !== 8 ||
     !(/^\d{8}$/).test(dateConvertedToRegular.replace(/\D/g, ''))) {
-      console.warn(`input '${date}' does match inputFormat '${inputFormatType}' or any of its shortcuts.`);
+      console.warn(`input '${date}' does not match inputFormat '${inputFormatType}' or any of its shortcuts.`);
       return date.toString();
     }
   
@@ -409,7 +474,7 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
   }
 }
 
-export function convertPercentDateFormat(destinationFormat: string, regularDate: string) {
+export function convertPercentDateFormat(destinationFormat: ReportFormats, regularDate: string) {
   if (destinationFormat === 'default') {
     console.error('"default" format entered for percent date format. Please provide fallback.');
   }
