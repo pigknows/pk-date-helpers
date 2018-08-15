@@ -31,6 +31,8 @@ Supports conversions from all of PigKnows date formats from any format into any 
 
     const newRegularString = convertDateToRegularString(inputFormat, stringToConvert); // outputs in yyyy-MM-dd format
 
+NOTE: `inputFormat` can be in either a standard format (i.e. 'REGULAR', 'NEWSHAM', etc) or Report / percent format.
+
 #### convertPercentDateFormat
 Used for % style date formats instead of the string formats ("European", "THOUSAND", etc.). Used exclusively for reporting at this point in time. Requires that the input be in Regular format.
 

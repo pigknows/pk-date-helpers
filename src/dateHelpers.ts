@@ -301,7 +301,7 @@ export function convertDateToRegularString(inputFormat: FormatNames | ReportForm
       return DateTime.fromFormat(dateStr, 'yyMMdd').toFormat('yyyy-MM-dd');
     case '%Y-%m-%d':
     case '%Y/%m/%d':
-    return DateTime.fromFormat(dateStr, 'yyyyMMdd').toFormat('yyyy-MM-dd');
+      return DateTime.fromFormat(dateStr, 'yyyyMMdd').toFormat('yyyy-MM-dd');
     default:
       return dateStr;
       console.error(`Unknown date format: ${inputFormat}.`)
