@@ -293,7 +293,8 @@ export function convertDateToRegularString(inputFormat: FormatNames | ReportForm
     case '%n':
       return convertDateToRegularString('NEWSHAM', convertShortcutDate('NEWSHAM', dateStr));
     case '%t':
-      return convertDateToRegularString('THOUSAND', convertShortcutDate('THOUSAND', dateStr));
+      const shortcutToFull = convertShortcutDate('THOUSAND', dateStr);
+      return convertDateToRegularString('THOUSAND', shortcutToFull);
     case '%T':
       return convertDateToRegularString('THOUSAND', dateStr)
     case '%y-%m-%d':
@@ -441,7 +442,15 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
         return inputDate;
       }
     case 'NEWSHAM':
-      if (inputDate.length === 4) {
+      const todayNewsham = convertDateToFormatType('REGULAR', 'NEWSHAM', DateTime.local().toFormat('yyyy-MM-dd'));
+      const currentNewshamCycle = todayNewsham.slice(0, 2);
+      if (inputDate.length < 4) {
+        const paddedDate = `${currentNewshamCycle}${padNum(inputDate, 3)}`;
+        const regularizedDate = convertDateToFormatType('NEWSHAM', 'REGULAR', paddedDate);
+        return detectIfFutureDate(regularizedDate)
+          ? `${parseInt(currentNewshamCycle)-1}${padNum(inputDate, 3)}`
+          : paddedDate;
+      } else if (inputDate.length === 4) {
         return `1${inputDate}`
       } else if (inputDate.length === 6) {
         const regularDate = `20${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${inputDate.slice(4)}`;
@@ -474,7 +483,7 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
   }
 }
 
-export function convertPercentDateFormat(destinationFormat: ReportFormats, regularDate: string) {
+export function convertPercentDateFormat(destinationFormat: ReportFormats | 'default', regularDate: string) {
   if (destinationFormat === 'default') {
     console.error('"default" format entered for percent date format. Please provide fallback.');
   }
