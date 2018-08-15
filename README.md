@@ -62,7 +62,7 @@ Detects the format of a string, if it matches a known date format. Optional para
 
     ...
 
-    const generalDetection = detectFormatType(dateString, preferStandardFormats, arrayOfFormatsToIgnore, ignoreShortcuts);
+    const generalDetection = detectFormatType(dateString, preferStandardFormats?, arrayOfFormatsToIgnore?);
 
     // examples:
     const detectAStandardFormat = detectFormatType('17001', true, ['THOUSAND']); // ignoring thousand, as this is probably newsham

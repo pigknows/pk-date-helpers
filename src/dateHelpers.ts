@@ -78,7 +78,7 @@ const dateFormatsMap = {
   },
 };
 
-export function detectFormatType(date, preferStandard = true, ignoreFormats = [], ignoreShortcuts = false) {
+export function detectFormatType(date, preferStandard = true, ignoreFormats = []) {
   if (!date) {
     console.error('Input date required.');
     return '';
