@@ -78,7 +78,101 @@ const dateFormatsMap = {
   },
 };
 
+export function detectFormatType(date, preferStandard = true, ignoreFormats = []) {
+  if (!date) {
+    throw new Error('Input date required.');
+  }
+
+  const formatMap = preferStandard
+    ? {
+      'AMERICAN': /^\d{2}-\d{2}-\d{4}$/,
+      'EUROPEAN': /^\d{2}-\d{2}-\d{4}$/,
+      'REGULAR': /^\d{4}-\d{2}-\d{2}$/,
+      'JULIAN': /^\d{2}-\d{3}$/,
+      'NEWSHAM': /^\d{5}$/,
+      'THOUSAND': /^\d{5}$/,
+    } : {
+      '%b%d': /^([a-zA-Z]){3}\d{2}$/,
+      '%b%d%y': /^([a-zA-Z]){3}\d{2}\d{2}$/,
+      '%b%d%Y': /^([a-zA-Z]){3}\d{2}\d{4}$/,
+      '%d%b': /^\d{2}([a-zA-Z]){3}$/,
+      '%d%b%y': /^\d{2}([a-zA-Z]){3}\d{2}$/,
+      '%d%b%Y': /^\d{2}([a-zA-Z]){3}\d{4}$/,
+      '%d-%m-%y': /^\d{2}-\d{2}-\d{2}$/,
+      '%d-%m-%Y': /^\d{2}-\d{2}-\d{4}$/,
+      '%m-%d': /^\d{2}-\d{2}$/,
+      '%m-%d-%y': /^\d{2}-\d{2}-\d{2}$/,
+      '%m-%d-%Y': /^\d{2}-\d{2}-\d{4}$/,
+      '%j': /^\d{3}$/,
+      '%J': /^\d{2}-\d{3}$/,
+      '%N': /^\d{5}$/,
+      '%n': /^\d{3}$/,
+      '%t': /^\d{3}$/,
+      '%T': /^\d{5}$/,
+      '%y-%m-%d': /^\d{2}-\d{2}-\d{2}$/,
+      '%Y-%m-%d': /^\d{4}-\d{2}-\d{2}$/,
+    }
+
+  // remove unneeded formats and set preference for conflicting formats
+  ignoreFormats.forEach(format => {
+    delete formatMap[format];
+  });
+
+  const standardizedDate = date.toString().replace(/\//g, '-').split('-').map(x => x.replace(/[^a-zA-z0-9]/g, '')).join('-');
+  for (const formatName in formatMap) {
+    if (formatMap[formatName].test(standardizedDate)) {
+      return formatName;
+    }
+  }
+
+  throw new Error(`Unknown format type for date: ${date.toString()}`);
+}
+
+export function getConflictingFormatsForType(formatType) {
+  if (!formatType || typeof formatType !== 'string') {
+    throw new Error('Please use an existing format type supported by PigKnows.');
+  }
+
+  const conflictsMap = {
+    'AMERICAN': ['EUROPEAN'],
+    'EUROPEAN': ['AMERICAN'],
+    'JULIAN': [],
+    'NEWSHAM': ['THOUSAND'],
+    'REGULAR': [],
+    'THOUSAND': [],
+    '%b%d': [],
+    '%b%d%y': [],
+    '%b%d%Y': [],
+    '%d%b': [],
+    '%d%b%y': [],
+    '%d%b%Y': [],
+    '%d-%m-%y': ['%m-%d-%y', '%y-%m-%d'],
+    '%d-%m-%Y': ['%m-%d-%Y'],
+    '%m-%d': [],
+    '%m-%d-%y': ['%d-%m-%y', '%y-%m-%d'],
+    '%m-%d-%Y': ['%d-%m-%Y'],
+    '%j': ['%n', '%t'],
+    '%J': [],
+    '%N': ['%T'],
+    '%n': ['%j', '%t'],
+    '%t': ['%j', '%n'],
+    '%T': ['%N'],
+    '%y-%m-%d': ['%d-%m-%y', '%m-%d-%y'],
+    '%Y-%m-%d': [],
+  }
+
+  if (conflictsMap[formatType]) {
+    return conflictsMap[formatType];
+  }
+
+  throw new Error(`Unknown format type: ${formatType}`)
+}
+
 export function convertDateToRegularString(inputFormat: FormatNames, date: string): string {
+  if (typeof date !== 'string') {
+    throw new Error('Date must be a string.');
+  }
+
   if (!date) {
     return '';
   }
@@ -155,6 +249,10 @@ export function convertDateToFormatType(
   if (!date || !inputFormatType || !destinationFormatType) {
     console.error('Trying to convert with missing fields.')
     return '';
+  }
+
+  if (typeof date !== 'string') {
+    throw new Error('Date must be a string.');
   }
 
   const isInRegular = /^\d{4}-\d{2}-\d{2}$/.test(date.toString());

@@ -3,6 +3,8 @@ import {
   convertDateToRegularString,
   convertPercentDateFormat,
   convertShortcutDate,
+  detectFormatType,
+  getConflictingFormatsForType,
 } from './dateHelpers';
 
 export {
@@ -10,4 +12,6 @@ export {
   convertDateToRegularString,
   convertPercentDateFormat,
   convertShortcutDate,
+  detectFormatType,
+  getConflictingFormatsForType,
 }
