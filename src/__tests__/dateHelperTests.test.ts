@@ -376,6 +376,36 @@ describe('Report Format from Regular conversions', () => {
   });
 });
 
+describe('Report Format from shortcut', () => {
+  test('1 digit shortcut (always read as THOUSAND)', () => {
+    expect(convertPercentDateFormat('%Y-%m-%d', '1')).toEqual('2018-04-14');
+  });
+
+  test('2 digit shortcut (always read as THOUSAND)', () => {
+    expect(convertPercentDateFormat('%Y-%m-%d', '10')).toEqual('2018-04-23');
+  });
+
+  test('3 digit shortcut (always read as THOUSAND)', () => {
+    expect(convertPercentDateFormat('%Y-%m-%d', '100')).toEqual('2018-07-22');
+  });
+
+  test('4 digit shortcut (always read as THOUSAND)', () => {
+    expect(convertPercentDateFormat('%Y-%m-%d', '0101')).toEqual('2018-01-01');
+  });
+
+  test('5 digit shortcut (always read as THOUSAND)', () => {
+    expect(convertPercentDateFormat('%Y-%m-%d', '17001')).toEqual('2018-04-14');
+  });
+
+  test('6 digit shortcut (always read as THOUSAND)', () => {
+    expect(convertPercentDateFormat('%Y-%m-%d', '170101')).toEqual('2017-01-01');
+  });
+
+  test('8 digit shortcut (always read as THOUSAND)', () => {
+    expect(convertPercentDateFormat('%Y-%m-%d', '20170101')).toEqual('2017-01-01');
+  });
+});
+
 describe('Report Format to Regular conversions', () => {
   test('%b%d format', () => {
     expect(convertDateToRegularString('%b%d', 'Nov01')).toEqual(regular1);
@@ -497,6 +527,8 @@ describe('Report Format to Regular conversions', () => {
 
   test('%y%mm%d', () => {
     // unsupported format
+    /* tslint:disable */
     expect(convertDateToRegularString('%y%mm%d', '80101')).toEqual('80101');
+    /* tslint:enable */
   });
 });

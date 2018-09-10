@@ -483,13 +483,38 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
   }
 }
 
-export function convertPercentDateFormat(destinationFormat: ReportFormats | 'default', regularDate: string) {
+export function convertPercentDateFormat(destinationFormat: ReportFormats | 'default', date: string) {
   if (destinationFormat === 'default') {
     console.error('"default" format entered for percent date format. Please provide fallback.');
   }
 
   if (destinationFormat.indexOf('%') === -1) {
     console.error(`${destinationFormat} does not match percentage format type.`);
+  }
+
+  let regularDate = date;
+  if (regularDate.length !== 10) {
+    // check for shortcut
+    switch (regularDate.length) {
+      case 1:
+      case 2:
+      case 3:
+      case 5: {
+        regularDate = convertDateToFormatType('THOUSAND', 'REGULAR', regularDate);
+        break;
+      }
+      case 4:
+      case 6:
+      case 8: {
+        regularDate = convertShortcutDate('REGULAR', regularDate);
+        break;
+      }
+      default:
+        break;
+    }
+  }
+  if (regularDate.length === 8) {
+    regularDate = `${regularDate.slice(0,4)}-${regularDate.slice(4,6)}-${regularDate.slice(6)}`;
   }
 
   switch (destinationFormat.replace(/\s/g, '').replace(/\,/g, '')) {

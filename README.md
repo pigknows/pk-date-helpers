@@ -34,7 +34,7 @@ Supports conversions from all of PigKnows date formats from any format into any 
 NOTE: `inputFormat` can be in either a standard format (i.e. 'REGULAR', 'NEWSHAM', etc) or Report / percent format.
 
 #### convertPercentDateFormat
-Used for % style date formats instead of the string formats ("European", "THOUSAND", etc.). Used exclusively for reporting at this point in time. Requires that the input be in Regular format.
+Used for % style date formats instead of the string formats ("European", "THOUSAND", etc.). Used exclusively for reporting at this point in time. Requires that the input be in Regular format, or one of 7 supported shortcuts.
 
     Usage:
 
@@ -43,6 +43,23 @@ Used for % style date formats instead of the string formats ("European", "THOUSA
     ...
 
     const newRegularString = convertPercentDateFormat(destinationFormat, regularStringToConvert); // outputs in destination format
+
+##### 7 supported shortcuts:
+Shortcuts supported: 1,2,3,4,5,6 or 8.
+
+- "1 digit" Thousand day is translated into the Regular date value. (i.e. if I type in 1, then the system will translate that into 2018-04-14
+
+- "2 digits" Thousand day is again translated into the Regular date value (i.e.if I type in 10, it gets translated into 2018-04-23)
+
+- "3 digits" Thousand day is again translated into the Regular date value (i.e. if I type in 100, it gets translated into 2018-07-22)
+
+- "4 digits" Translates the MMDD into the current Regular date year format
+
+- "5 digits" Thousand day is translated into Regular date format (i.e. if I type in 17001, then the system translates that into 2018-04-14)
+
+- "6 digits" This is a Regular date format shortcut that allows you to enter a previous year (i.e. like YYMMDD, so 170101 would be translated into 2017-01-01)
+
+- "8 digits" this shortcut allows YYYYMMDD to be translated into Regular date format (i.e. if I enter 20170101, it will be translated into 2017-01-01).
 
 #### convertShortcutDate
 Converts a shortcut of any format into its long form. For example, converting `0101` (a regular shortcut) into `2018-01-01`.
