@@ -127,6 +127,15 @@ export function detectFormatType(date, preferStandard = true, ignoreFormats = []
   });
 
   const standardizedDate = date.toString().replace(/\//g, '-').split('-').map(x => x.replace(/[^a-zA-z0-9]/g, '')).join('-');
+  if (standardizedDate.length === 8) { // 2 digits for month, day, year
+    if (formatMap.AMERICAN && !formatMap.EUROPEAN && !formatMap.REGULAR) {
+      return 'AMERICAN';
+    } else if (!formatMap.AMERICAN && formatMap.EUROPEAN && !formatMap.REGULAR) {
+      return 'EUROPEAN';
+    } else if (!formatMap.AMERICAN && !formatMap.EUROPEAN && formatMap.REGULAR) {
+      return 'REGULAR';
+    }
+  }
   for (const formatName in formatMap) {
     if (formatMap[formatName].test(standardizedDate)) {
       return formatName;

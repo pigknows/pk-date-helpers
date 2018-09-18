@@ -24,6 +24,18 @@ describe('Standard Format Detection', () => {
   test('Detects THOUSAND Format', () => {
     expect(detectFormatType('17000', true, ['NEWSHAM'])).toEqual('THOUSAND');
   });
+
+  test('Detects AMERICAN with shortcut if EUROPEAN and REGULAR ruled out', () => {
+    expect(detectFormatType('09/02/18', true, ['EUROPEAN', 'REGULAR'])).toEqual('AMERICAN');
+  });
+
+  test('Detects EUROPEAN with shortcut if AMERICAN and REGULAR ruled out', () => {
+    expect(detectFormatType('09/02/18', true, ['AMERICAN', 'REGULAR'])).toEqual('EUROPEAN');
+  });
+
+  test('Detects REGULAR with shortcut if EUROPEAN and AMERICAN ruled out', () => {
+    expect(detectFormatType('09/02/18', true, ['EUROPEAN', 'AMERICAN'])).toEqual('REGULAR');
+  });
 });
 
 describe('Percent Format Detection', () => {
