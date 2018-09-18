@@ -94,11 +94,11 @@ export function detectFormatType(date, preferStandard = true, ignoreFormats = []
   const formatMap = preferStandard
     ? {
       'AMERICAN': /^\d{2}-\d{2}-\d{4}$/,
+      'REGULAR': /^\d{4}-\d{2}-\d{2}$/,
       'EUROPEAN': /^\d{2}-\d{2}-\d{4}$/,
+      'THOUSAND': /^\d{5}$/,
       'JULIAN': /^\d{2}-\d{3}$/,
       'NEWSHAM': /^\d{5}$/,
-      'REGULAR': /^\d{4}-\d{2}-\d{2}$/,
-      'THOUSAND': /^\d{5}$/,
     } : {
       '%b%d': /^([a-zA-Z]){3}\d{2}$/,
       '%b%d%y': /^([a-zA-Z]){3}\d{2}\d{2}$/,
@@ -134,6 +134,8 @@ export function detectFormatType(date, preferStandard = true, ignoreFormats = []
       return 'EUROPEAN';
     } else if (!formatMap.AMERICAN && !formatMap.EUROPEAN && formatMap.REGULAR) {
       return 'REGULAR';
+    } else if (preferStandard) { // 6 digits with Julian, Thousand, or Newsham
+      throw 'INVALID DATE';
     }
   }
   for (const formatName in formatMap) {

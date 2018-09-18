@@ -14,7 +14,7 @@ describe('Standard Format Detection', () => {
   });
 
   test('Detects NEWSHAM Format', () => {
-    expect(detectFormatType('12000')).toEqual('NEWSHAM');
+    expect(detectFormatType('12000', true, ['THOUSAND'])).toEqual('NEWSHAM');
   });
 
   test('Detects REGULAR Format', () => {
@@ -22,7 +22,7 @@ describe('Standard Format Detection', () => {
   });
 
   test('Detects THOUSAND Format', () => {
-    expect(detectFormatType('17000', true, ['NEWSHAM'])).toEqual('THOUSAND');
+    expect(detectFormatType('17000')).toEqual('THOUSAND');
   });
 
   test('Detects AMERICAN with shortcut if EUROPEAN and REGULAR ruled out', () => {
@@ -35,6 +35,12 @@ describe('Standard Format Detection', () => {
 
   test('Detects REGULAR with shortcut if EUROPEAN and AMERICAN ruled out', () => {
     expect(detectFormatType('09/02/18', true, ['EUROPEAN', 'AMERICAN'])).toEqual('REGULAR');
+  });
+
+  test('Throws an error with shortcut and JULIAN, THOUSAND, or NEWSHAM formats', () => {
+    expect(() => detectFormatType('09/02/18', true, ['THOUSAND', 'NEWSHAM'])).toThrowError('INVALID DATE');
+    expect(() => detectFormatType('09/02/18', true, ['JULIAN', 'NEWSHAM'])).toThrowError('INVALID DATE');
+    expect(() => detectFormatType('09/02/18', true, ['THOUSAND', 'JULIAN'])).toThrowError('INVALID DATE');
   });
 });
 
