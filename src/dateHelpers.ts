@@ -176,11 +176,11 @@ export function getConflictingFormatsForType(formatType: FormatNames | ReportFor
   }
 
   const conflictsMap = {
-    'AMERICAN': ['EUROPEAN'],
-    'EUROPEAN': ['AMERICAN'],
+    'AMERICAN': ['EUROPEAN', 'REGULAR'],
+    'EUROPEAN': ['AMERICAN', 'REGULAR'],
     'JULIAN': [],
     'NEWSHAM': ['THOUSAND'],
-    'REGULAR': [],
+    'REGULAR': ['AMERICAN', 'EUROPEAN'],
     'THOUSAND': ['NEWSHAM'],
     '%b%d': [],
     '%b%d%y': [],
