@@ -2,7 +2,7 @@
 
 Supports conversions from all of PigKnows date formats from any format into any other format.
 
-## Supported Formats:
+## Supported Standard Formats:
 1. American (MM-dd-yyyy)
 2. European (dd-MM-yyyy)
 3. ISO / Regular (yyyy-MM-dd)
@@ -10,6 +10,34 @@ Supports conversions from all of PigKnows date formats from any format into any 
 5. Newsham (5 digit and 3 digit)
 6. Regular / ISO (yyyy-MM-dd)
 7. Thousand (5 digits and 3 digit)
+
+## Supported % Formats: (case sensitive)
+1. '%b%d' - Jan02
+2. '%b%d%y' - Jan02,18
+3. '%b%d%Y' - Jan02,2018
+4. '%d%b' - 02Jan
+5. '%d%b%y' - 02Jan18
+6. '%d%b%Y' - 02Jan2018
+7. '%d-%m-%y' - 02-01-18
+8. '%d-%m-%Y' - 02-02-2018
+9. '%d/%m/%y' - 02/01/18
+10. '%d/%m/%Y' - 02-01/2018
+11. '%m/%d' - 01/02
+12. '%m/%d/%y' - 01/02/18
+13. '%m/%d/%Y' - 01/02/2018
+14. '%m-%d' - 01-02
+15. '%m-%d-%y' - 01-02-18
+16. '%m-%d-%Y' - 01-02-2018
+17. '%j' - 002 (3 digit Julian)
+18. '%J' - 18-002 (5 digit Julian)
+19. '%N' - 11899 (5 digit Newsham)
+20. '%n' - 899 (3 digit Newsham)
+21. '%t' - 899 (3 digit Thousand)
+22. '%T' - 16899 (5 digit Thousand)
+24. '%y-%m-%d' - 18-01-02
+25. '%Y-%m-%d' - 2018-01-02
+26. '%y/%m/%d' - 18/01/02
+27. '%Y/%m/%d' - 2018/01/02
 
 ## Available Methods:
 
@@ -101,4 +129,15 @@ Returns an array of formats that may appear the same from a regex / structure pe
     const ignoreStandardFormats = getConflictingFormatsForType('THOUSAND'); // returns ['NEWSHAM']
     const ignoreReportFormats = getConflictingFormatsForType('%y-%m-%d'); // returns ['%d-%m-%y', '%m-%d-%y']
 
-NOTE: This method *will not* detect shortcut conflicts. This is used for full formats only.
+Supported Shortcuts (standard formats only):
+
+```
+6-digit date (either dd/mm/yy, mm/dd/yy, or yy/mm/dd):
+- If 'ignoredFormats' includes *both* of the 2 possible conflicts (i.e. 'AMERICAN', 'EUROPEAN' for 'REGULAR'), then this will detect properly. If you do not pass in these possible conflicts, it will fail. Conflicts detected for Julian, for example, will return 'INVALID DATE' with this shortcut because it does not know which format is intended.
+
+1, 2, 3, and 5-digit shortcuts
+- Order of Preference: Thousand, Julian, Newsham
+- By default, one of these shortcuts will return 'THOUSAND', unless 'THOUSAND' is added to 'ignoredFormat'. The same applies to Julian and Newsham, but 'ignoredFormats' must include 'THOUSAND' to reach 'JULIAN', and 'ignoredFormats' must include both 'THOUSAND' and 'JULIAN' to reach 'NEWSHAM'.
+
+
+NOTE: Shortcut conflicts do not have perfect detection, as there are many conflicts.

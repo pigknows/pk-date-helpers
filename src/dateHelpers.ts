@@ -127,7 +127,7 @@ export function detectFormatType(date, preferStandard = true, ignoreFormats = []
   });
 
   const standardizedDate = date.toString().replace(/\//g, '-').split('-').map(x => x.replace(/[^a-zA-z0-9]/g, '')).join('-');
-  if (standardizedDate.length === 8) { // 2 digits for month, day, year
+  if (standardizedDate.replace(/\D/g, '').length === 6) { // 2 digits for month, day, year
     if (formatMap.AMERICAN && !formatMap.EUROPEAN && !formatMap.REGULAR) {
       return 'AMERICAN';
     } else if (!formatMap.AMERICAN && formatMap.EUROPEAN && !formatMap.REGULAR) {
@@ -141,6 +141,27 @@ export function detectFormatType(date, preferStandard = true, ignoreFormats = []
   for (const formatName in formatMap) {
     if (formatMap[formatName].test(standardizedDate)) {
       return formatName;
+    }
+  }
+
+  if (preferStandard) { // still no match? check other supported shortcuts
+    // order preference: THOUSAND, JULIAN, NEWSHAM
+    if (standardizedDate.length <= 3) {
+      if (!ignoreFormats.includes('THOUSAND')) {
+        return 'THOUSAND';
+      } else if (!ignoreFormats.includes('JULIAN')) {
+        return 'JULIAN';
+      } else if (!ignoreFormats.includes('NEWSHAM')) {
+        return 'NEWSHAM';
+      }
+    } else if (standardizedDate.replace(/\D/g, '').length === 5) {
+      if (!ignoreFormats.includes('THOUSAND')) {
+        return 'THOUSAND';
+      } else if (!ignoreFormats.includes('JULIAN')) {
+        return 'JULIAN';
+      } else if (!ignoreFormats.includes('NEWSHAM')) {
+        return 'NEWSHAM';
+      }
     }
   }
 

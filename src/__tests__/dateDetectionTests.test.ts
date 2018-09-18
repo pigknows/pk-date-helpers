@@ -25,22 +25,42 @@ describe('Standard Format Detection', () => {
     expect(detectFormatType('17000')).toEqual('THOUSAND');
   });
 
-  test('Detects AMERICAN with shortcut if EUROPEAN and REGULAR ruled out', () => {
+  test('Detects AMERICAN with standard shortcut if EUROPEAN and REGULAR ruled out', () => {
     expect(detectFormatType('09/02/18', true, ['EUROPEAN', 'REGULAR'])).toEqual('AMERICAN');
   });
 
-  test('Detects EUROPEAN with shortcut if AMERICAN and REGULAR ruled out', () => {
+  test('Detects EUROPEAN with standard shortcut if AMERICAN and REGULAR ruled out', () => {
     expect(detectFormatType('09/02/18', true, ['AMERICAN', 'REGULAR'])).toEqual('EUROPEAN');
   });
 
-  test('Detects REGULAR with shortcut if EUROPEAN and AMERICAN ruled out', () => {
+  test('Detects REGULAR with standard shortcut if EUROPEAN and AMERICAN ruled out', () => {
     expect(detectFormatType('09/02/18', true, ['EUROPEAN', 'AMERICAN'])).toEqual('REGULAR');
   });
 
-  test('Throws an error with shortcut and JULIAN, THOUSAND, or NEWSHAM formats', () => {
+  test('Throws an error with standard shortcut and JULIAN, THOUSAND, or NEWSHAM formats', () => {
     expect(() => detectFormatType('09/02/18', true, ['THOUSAND', 'NEWSHAM'])).toThrowError('INVALID DATE');
     expect(() => detectFormatType('09/02/18', true, ['JULIAN', 'NEWSHAM'])).toThrowError('INVALID DATE');
     expect(() => detectFormatType('09/02/18', true, ['THOUSAND', 'JULIAN'])).toThrowError('INVALID DATE');
+  });
+
+  test('Detects THOUSAND for input of 1 if no ignoredFormats', () => {
+    expect(detectFormatType('1')).toEqual('THOUSAND');
+  });
+
+  test('Detects JULIAN for input of 1 if THOUSAND ignored', () => {
+    expect(detectFormatType('1', true, ['THOUSAND'])).toEqual('JULIAN');
+  });
+
+  test('Detects NEWSHAM for input of 1 if THOUSAND and JULIAN', () => {
+    expect(detectFormatType('1', true, ['THOUSAND', 'JULIAN'])).toEqual('NEWSHAM');
+  });
+
+  test('Detects THOUSAND for input of 01 if no ignoredFormats', () => {
+    expect(detectFormatType('01')).toEqual('THOUSAND');
+  });
+
+  test('Detects THOUSAND for input of 001 if no ignoredFormats', () => {
+    expect(detectFormatType('001')).toEqual('THOUSAND');
   });
 });
 
