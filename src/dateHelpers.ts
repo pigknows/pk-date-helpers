@@ -169,7 +169,7 @@ export function detectFormatType(date, preferStandard = true, ignoreFormats = []
   return '';
 }
 
-export function getConflictingFormatsForType(formatType: FormatNames | ReportFormats) {
+export function getConflictingFormatsForType(formatType: FormatNames | ReportFormats, isShortcut = false) {
   if (!formatType || typeof formatType !== 'string') {
     console.error('Please use an existing format type supported by PigKnows.');
     return [];
@@ -201,6 +201,12 @@ export function getConflictingFormatsForType(formatType: FormatNames | ReportFor
     '%T': ['%N'],
     '%y-%m-%d': ['%d-%m-%y', '%m-%d-%y'],
     '%Y-%m-%d': [],
+  }
+
+  if (isShortcut) {
+    conflictsMap.JULIAN.push('THOUSAND', 'NEWSHAM');
+    conflictsMap.THOUSAND.push('JULIAN');
+    conflictsMap.NEWSHAM.push('JULIAN');
   }
 
   if (conflictsMap[formatType]) {
