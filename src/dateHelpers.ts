@@ -169,7 +169,7 @@ export function detectFormatType(date, preferStandard = true, ignoreFormats = []
   return '';
 }
 
-export function getConflictingFormatsForType(formatType: FormatNames | ReportFormats, isShortcut = false) {
+export function getConflictingFormatsForType(formatType: FormatNames | ReportFormats) {
   if (!formatType || typeof formatType !== 'string') {
     console.error('Please use an existing format type supported by PigKnows.');
     return [];
@@ -178,10 +178,10 @@ export function getConflictingFormatsForType(formatType: FormatNames | ReportFor
   const conflictsMap = {
     'AMERICAN': ['EUROPEAN', 'REGULAR'],
     'EUROPEAN': ['AMERICAN', 'REGULAR'],
-    'JULIAN': [],
-    'NEWSHAM': ['THOUSAND'],
+    'JULIAN': ['THOUSAND', 'NEWSHAM'],
+    'NEWSHAM': ['THOUSAND', 'JULIAN'],
     'REGULAR': ['AMERICAN', 'EUROPEAN'],
-    'THOUSAND': ['NEWSHAM'],
+    'THOUSAND': ['NEWSHAM', 'JULIAN'],
     '%b%d': [],
     '%b%d%y': [],
     '%b%d%Y': [],
@@ -201,12 +201,6 @@ export function getConflictingFormatsForType(formatType: FormatNames | ReportFor
     '%T': ['%N'],
     '%y-%m-%d': ['%d-%m-%y', '%m-%d-%y'],
     '%Y-%m-%d': [],
-  }
-
-  if (isShortcut) {
-    conflictsMap.JULIAN.push('THOUSAND', 'NEWSHAM');
-    conflictsMap.THOUSAND.push('JULIAN');
-    conflictsMap.NEWSHAM.push('JULIAN');
   }
 
   if (conflictsMap[formatType]) {
