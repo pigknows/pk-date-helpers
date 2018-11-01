@@ -347,7 +347,7 @@ export function convertDateToFormatType(
   inputFormatType: FormatNames | ReportFormats,
   destinationFormatType: FormatNames,
   date: string): string {
-
+    
   if (!date || !inputFormatType || !destinationFormatType) {
     console.error('Trying to convert with missing fields.')
     return '';
@@ -368,14 +368,14 @@ export function convertDateToFormatType(
   
   if (dateConvertedToRegular.replace(/\D/g, '').length !== 8 ||
     !(/^\d{8}$/).test(dateConvertedToRegular.replace(/\D/g, ''))) {
-      console.warn(`input '${date}' does not match inputFormat '${inputFormatType}' or any of its shortcuts.`);
-      return date.toString();
+      // console.warn(`input '${date}' does not match inputFormat '${inputFormatType}' or any of its shortcuts.`);
+      return 'INVALID DATE';
     }
   
   const formatter = dateFormatsMap[destinationFormatType.toUpperCase()];
   if (!formatter) {
-    console.warn(`${destinationFormatType} is not a valid date format.`);
-    return date.toString();
+    // console.warn(`${destinationFormatType} is not a valid date format.`);
+    return 'INVALID DATE';
   }
 
   if (/^\d{4}-\d{2}-\d{2}$/.test(dateConvertedToRegular)) {

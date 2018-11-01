@@ -1,19 +1,23 @@
 import { convertDateToFormatType, convertPercentDateFormat, convertShortcutDate, convertDateToRegularString } from '../dateHelpers';
 
-// all of these map to November 1, 2017
-const american1 = '11-01-2018';
-const american2 = '11-01-2017'; // future dates when using shortcut will be converted to previous year
-const european1 = '01-11-2018';
-const european2 = '01-11-2017'; // future dates when using shortcut will be converted to previous year
-const iso1 = '2018-11-01';
-const iso2 = '2017-11-01'; // future dates when using shortcut will be converted to previous year
-const julian1 = '18-305';
-const julian2 = '17-305'; // future dates when using shortcut will be converted to previous year
-const newsham1 = '12202';
-const regular1 = '2018-11-01';
-const regular2 = '2017-11-01'; // future dates when using shortcut will be converted to previous year
-const thousand1 = '17202';
-const thousand2 = '16837'; // future dates when using shortcut will be converted to previous year
+// all of these map to December 31, 2017
+const currentYear = new Date().getFullYear();
+const lastYear = currentYear - 1;
+const american1 = `12-31-${currentYear}`;
+const american2 = `12-31-${lastYear}`; // future dates when using shortcut will be converted to previous year
+const american3 = '11-28-2017'; 
+const european1 = `31-12-${currentYear}`;
+const european2 = `31-12-${lastYear}`; // future dates when using shortcut will be converted to previous year
+const european3 = '28-11-2017'; 
+const iso1 = `${currentYear}-12-31`;
+const iso2 = `${lastYear}-12-31`; // future dates when using shortcut will be converted to previous year
+const julian1 = '18-365';
+const julian2 = '17-365'; // future dates when using shortcut will be converted to previous year
+const newsham1 = '12262';
+const regular1 = `${currentYear}-12-31`;
+const regular2 = `${lastYear}-12-31`; // future dates when using shortcut will be converted to previous year
+const thousand1 = '17262';
+const thousand2 = '16897'; // future dates when using shortcut will be converted to previous year
 
 describe('American Format Direct Conversion:', () => {
   test('converts REGULAR date input into expected format', () => {
@@ -26,6 +30,16 @@ describe('American Format Direct Conversion:', () => {
     expect(input1ToAmerican).toEqual(american1);
   });
 
+  test('converts AMERICAN date input into expected EUROPEAN format', () => {
+    const input1ToEuropean = convertDateToFormatType('EUROPEAN', 'REGULAR', american3);
+    expect(input1ToEuropean).toEqual('INVALID DATE');
+  });
+  
+  test('converts EUROPEAN date input into expected AMERICAN format', () => {
+    const input1ToEuropean = convertDateToFormatType('AMERICAN', 'REGULAR', european3);
+    expect(input1ToEuropean).toEqual('INVALID DATE');
+  });
+
   test('converts THOUSAND date input into expected format', () => {
     const input1ToAmerican = convertDateToFormatType('THOUSAND', 'AMERICAN', thousand1);
     expect(input1ToAmerican).toEqual(american1);
@@ -33,8 +47,8 @@ describe('American Format Direct Conversion:', () => {
 });
 
 describe('American Shortcut Date Conversion:', () => {
-  const shortcut1 = '1101';
-  const shortcut2 = '110118';
+  const shortcut1 = '1231';
+  const shortcut2 = '123118';
 
   test('4 digit string converts properly', () => {
     // future dates should have previous year when using 4-digit shortcut
@@ -64,8 +78,8 @@ describe('European Format Direct Conversion', () => {
 });
 
 describe('European Shortcut Date Conversion:', () => {
-  const shortcut1 = '0111';
-  const shortcut2 = '011118';
+  const shortcut1 = '3112';
+  const shortcut2 = '311218';
 
   test('4 digit string converts properly', () => {
     // future dates should have previous year when using 4-digit shortcut
@@ -95,8 +109,8 @@ describe('ISO Format Direct Conversion', () => {
 });
 
 describe('ISO Shortcut Date Conversion:', () => {
-  const shortcut1 = '1101';
-  const shortcut2 = '181101';
+  const shortcut1 = '1231';
+  const shortcut2 = '181231';
 
   test('4 digit string converts properly', () => {
     // future dates should have previous year when using 4-digit shortcut
@@ -127,18 +141,18 @@ describe('Julian Format Direct Conversion', () => {
 
 describe('Julian Shortcut Date Conversion:', () => {
   const shortcut1 = '1';
-  const shortcut2 = '11';
+  const shortcut2 = '12';
 
-  const shortcut3 = '305';
-  const shortcut4 = '1101';
-  const shortcut5 = '181101';
+  const shortcut3 = '365';
+  const shortcut4 = '1231';
+  const shortcut5 = '181231';
 
   test('single digit converts properly', () => {
     expect(convertShortcutDate('julian', shortcut1)).toEqual('18-001');
   });
 
   test('2 digit converts properly', () => {
-    expect(convertShortcutDate('julian', shortcut2)).toEqual('18-011');
+    expect(convertShortcutDate('julian', shortcut2)).toEqual('18-012');
   });
 
   test('3 digit converts properly', () => {
@@ -174,8 +188,8 @@ describe('Newsham Format Direct Conversion', () => {
 });
 
 describe('Newsham Shortcut Date Conversion', () => {
-  const shortcut1 = '2202';
-  const shortcut2 = '181101';
+  const shortcut1 = '2262';
+  const shortcut2 = '181231';
 
   test('4 digit shortcut converts properly', () => {
     expect(convertShortcutDate('newsham', shortcut1)).toEqual(newsham1);
@@ -204,8 +218,8 @@ describe('Regular Format Direct Conversion', () => {
 });
 
 describe('Regular Shortcut Date Conversion:', () => {
-  const shortcut1 = '1101';
-  const shortcut2 = '181101';
+  const shortcut1 = '1231';
+  const shortcut2 = '181231';
 
   test('4 digit string converts properly', () => {
     // future dates should have previous year when using 4-digit shortcut
@@ -236,18 +250,18 @@ describe('Thousand Format Direct Conversion', () => {
 
 describe('Thousand Shortcut Date Conversion', () => {
   const shortcut1 = '1';
-  const shortcut2 = '11';
+  const shortcut2 = '12';
 
-  const shortcut3 = '837';
-  const shortcut4 = '1101';
-  const shortcut5 = '181101';
+  const shortcut3 = '897';
+  const shortcut4 = '1231';
+  const shortcut5 = '181231';
 
   test('single digit shortcut converts properly', () => {
     expect(convertShortcutDate('thousand', shortcut1)).toEqual('17001');
   });
 
   test('2 digit shortcut converts properly', () => {
-    expect(convertShortcutDate('thousand', shortcut2)).toEqual('17011');
+    expect(convertShortcutDate('thousand', shortcut2)).toEqual('17012');
   });
 
   test('3 digit shortcut converts properly', () => {
@@ -267,27 +281,27 @@ describe('Thousand Shortcut Date Conversion', () => {
 
 describe('Report Format from Regular conversions', () => {
   test('%b%d format', () => {
-    expect(convertPercentDateFormat('%b%d', regular1)).toEqual('Nov01');
+    expect(convertPercentDateFormat('%b%d', regular1)).toEqual('Dec31');
   });
 
   test('%b%d%y format', () => {
-    expect(convertPercentDateFormat('%b%d%y', regular1)).toEqual('Nov01,18');
+    expect(convertPercentDateFormat('%b%d%y', regular1)).toEqual('Dec31,18');
   });
 
   test('%b%d%Y format', () => {
-    expect(convertPercentDateFormat('%b%d%Y', regular1)).toEqual('Nov01,2018');
+    expect(convertPercentDateFormat('%b%d%Y', regular1)).toEqual('Dec31,2018');
   });
 
   test('%d%b format', () => {
-    expect(convertPercentDateFormat('%d%b', regular1)).toEqual('01Nov');
+    expect(convertPercentDateFormat('%d%b', regular1)).toEqual('31Dec');
   });
 
   test('%d%b%y format', () => {
-    expect(convertPercentDateFormat('%d%b%y', regular1)).toEqual('01Nov18');
+    expect(convertPercentDateFormat('%d%b%y', regular1)).toEqual('31Dec18');
   });
 
   test('%d%b%Y format', () => {
-    expect(convertPercentDateFormat('%d%b%Y', regular1)).toEqual('01Nov2018');
+    expect(convertPercentDateFormat('%d%b%Y', regular1)).toEqual('31Dec2018');
   });
 
   test('%d-%m-%y format', () => {
@@ -307,7 +321,7 @@ describe('Report Format from Regular conversions', () => {
   });
 
   test('%m-%d format', () => {
-    expect(convertPercentDateFormat('%m-%d', regular1)).toEqual('11-01');
+    expect(convertPercentDateFormat('%m-%d', regular1)).toEqual('12-31');
   });
 
   test('%m-%d-%y', () => {
@@ -319,7 +333,7 @@ describe('Report Format from Regular conversions', () => {
   });
 
   test('%m/%d format', () => {
-    expect(convertPercentDateFormat('%m/%d', regular1)).toEqual('11/01');
+    expect(convertPercentDateFormat('%m/%d', regular1)).toEqual('12/31');
   });
 
   test('%m/%d/%y', () => {
@@ -408,27 +422,27 @@ describe('Report Format from shortcut', () => {
 
 describe('Report Format to Regular conversions', () => {
   test('%b%d format', () => {
-    expect(convertDateToRegularString('%b%d', 'Nov01')).toEqual(regular1);
+    expect(convertDateToRegularString('%b%d', 'Dec31')).toEqual(regular1);
   });
 
   test('%b%d%y format', () => {
-    expect(convertDateToRegularString('%b%d%y', 'Nov0118')).toEqual(regular1);
+    expect(convertDateToRegularString('%b%d%y', 'Dec3118')).toEqual(regular1);
   });
 
   test('%b%d%Y format', () => {
-    expect(convertDateToRegularString('%b%d%Y', 'Nov012018')).toEqual(regular1);
+    expect(convertDateToRegularString('%b%d%Y', 'Dec312018')).toEqual(regular1);
   });
 
   test('%d%b format', () => {
-    expect(convertDateToRegularString('%d%b', '01Nov')).toEqual(regular1);
+    expect(convertDateToRegularString('%d%b', '31Dec')).toEqual(regular1);
   });
 
   test('%d%b%y format', () => {
-    expect(convertDateToRegularString('%d%b%y', '01Nov18')).toEqual(regular1);
+    expect(convertDateToRegularString('%d%b%y', '31Dec18')).toEqual(regular1);
   });
 
   test('%d%b%Y format', () => {
-    expect(convertDateToRegularString('%d%b%Y', '01Nov2018')).toEqual(regular1);
+    expect(convertDateToRegularString('%d%b%Y', '31Dec2018')).toEqual(regular1);
   });
 
   test('%d-%m-%y format', () => {
@@ -448,7 +462,7 @@ describe('Report Format to Regular conversions', () => {
   });
 
   test('%m-%d format', () => {
-    expect(convertDateToRegularString('%m-%d', '11-01')).toEqual(regular1);
+    expect(convertDateToRegularString('%m-%d', '12-31')).toEqual(regular1);
   });
 
   test('%m-%d-%y', () => {
@@ -460,7 +474,7 @@ describe('Report Format to Regular conversions', () => {
   });
 
   test('%m/%d format', () => {
-    expect(convertDateToRegularString('%m/%d', '11/01')).toEqual(regular1);
+    expect(convertDateToRegularString('%m/%d', '12/31')).toEqual(regular1);
   });
 
   test('%m/%d/%y', () => {
@@ -518,7 +532,7 @@ describe('Report Format to Regular conversions', () => {
   });
 
   test('%y/%m/%d', () => {
-    expect(convertDateToRegularString('%y/%m/%d', '18/11/01')).toEqual(regular1);
+    expect(convertDateToRegularString('%y/%m/%d', '18/12/31')).toEqual(regular1);
   });
 
   test('%Y/%m/%d', () => {
