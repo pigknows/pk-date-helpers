@@ -100,6 +100,8 @@ Converts a shortcut of any format into its long form. For example, converting `0
 
     const fullFormat = convertShortcutDate(inputAndOutputFormat, stringToConvert);
 
+** Note: `convertShortcutDate` should be wrapped in a try/catch in case an invalid number of characters is thrown in for a format, since it will throw errors. For example, inputting '123' as a shortcut for a 'REGULAR' date will throw `123 does match 'REGULAR' format or any of its shortcuts`.
+
 #### detectFormatType
 Detects the format of a string, if it matches a known date format. Optional parameters guide the detection to ignore any conflicting formats.
 
@@ -116,6 +118,12 @@ Detects the format of a string, if it matches a known date format. Optional para
     const detectNonStandardFormat = detectFormatType('001', false, ['%n', '%t']); // ignoring %n and %t as this is probably %j
 
 Note that shortcuts *are not* supported for detection. You must use the full version of any format for accurate detection.
+
+### detectIfFutureDate
+This returns true / false for if the date is in the future.
+
+### detectValidPKDate
+This returns true / false for if the date is valid according to PigKnows rules. For example, any years prior to 1900, Feb 31, a month '14', etc.
 
 #### getConflictingFormatsForType
 Returns an array of formats that may appear the same from a regex / structure perspective. Useful for finding the third parameter in `detectFormatType` above.

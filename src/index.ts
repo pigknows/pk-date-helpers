@@ -4,6 +4,8 @@ import {
   convertPercentDateFormat,
   convertShortcutDate,
   detectFormatType,
+  detectIfFutureDate,
+  detectIfValidPKDate,
   getConflictingFormatsForType,
 } from './dateHelpers';
 
@@ -13,5 +15,7 @@ export {
   convertPercentDateFormat,
   convertShortcutDate,
   detectFormatType,
+  detectIfFutureDate,
+  detectIfValidPKDate,
   getConflictingFormatsForType,
 }

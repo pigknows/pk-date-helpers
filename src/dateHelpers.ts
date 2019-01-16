@@ -1,4 +1,6 @@
 import { DateTime, DateObjectUnits } from 'luxon';
+
+const currentYear = new Date().getFullYear();
 const NEWSHAM_DAY_ZERO = '1985-06-05';
 const THOUSAND_DAY_ZERO = '1971-09-27';
 
@@ -387,7 +389,7 @@ export function convertDateToFormatType(
   }
 };
 
-function detectIfFutureDate(regularDate) {
+export function detectIfFutureDate(regularDate) {
   const currentDateTime = DateTime.local();
   const comparedDateTime = DateTime.fromObject({
     day: parseInt(regularDate.slice(8, 10)),
@@ -395,6 +397,23 @@ function detectIfFutureDate(regularDate) {
     year: parseInt(regularDate.slice(0, 4)),
   });
   return currentDateTime < comparedDateTime
+}
+
+export function detectIfValidPKDate(regularDate) {
+  const year = regularDate.slice(0, 4);
+  const month = regularDate.slice(5, 7);
+
+  // check valid year
+  if (parseInt(year) < 1900 || (parseInt(year) > currentYear)) {
+    return false;
+  }
+
+  // check valid month
+  if (parseInt(month) < 1 || (parseInt(month) > 12)) {
+    return false;
+  }
+
+  return DateTime.fromISO(regularDate).isValid;
 }
 
 // shortcut used must belong to the destination formatType.

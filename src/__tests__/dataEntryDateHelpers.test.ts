@@ -40,29 +40,40 @@ export {
 };
 
 describe('American Format Direct Conversion:', () => {
-  test('converts REGULAR date input into expected format', () => {
+  test('converts REGULAR date input into expected American format', () => {
     const input1ToAmerican = convertDateToFormatType('REGULAR', 'AMERICAN', regular1);
     expect(input1ToAmerican).toEqual(american1);
   });
 
-  test('converts JULIAN date input into expected format', () => {
+  test('converts JULIAN date input into expected American format', () => {
     const input1ToAmerican = convertDateToFormatType('JULIAN', 'AMERICAN', julian1);
     expect(input1ToAmerican).toEqual(american1);
   });
 
   test('converts AMERICAN date input into expected EUROPEAN format', () => {
-    const input1ToEuropean = convertDateToFormatType('EUROPEAN', 'REGULAR', american3);
-    expect(input1ToEuropean).toEqual('INVALID DATE');
-  });
-  
-  test('converts EUROPEAN date input into expected AMERICAN format', () => {
-    const input1ToEuropean = convertDateToFormatType('AMERICAN', 'REGULAR', european3);
-    expect(input1ToEuropean).toEqual('INVALID DATE');
+    const input1ToEuropean = convertDateToFormatType('AMERICAN', 'EUROPEAN', american1);
+    expect(input1ToEuropean).toEqual(european1);
   });
 
   test('converts THOUSAND date input into expected format', () => {
     const input1ToAmerican = convertDateToFormatType('THOUSAND', 'AMERICAN', thousand1);
     expect(input1ToAmerican).toEqual(american1);
+  });
+
+  test('converts EUROPEAN date input into expected AMERICAN format', () => {
+    const input1ToAmerican = convertDateToFormatType('EUROPEAN', 'AMERICAN', european1);
+    expect(input1ToAmerican).toEqual(american1);
+  });
+
+  // wrong format passed in
+  test('returns \'INVALID DATE\' string when an American date is passed in as European', () => {
+    const input1ToRegular = convertDateToFormatType('EUROPEAN', 'REGULAR', american3);
+    expect(input1ToRegular).toEqual('INVALID DATE');
+  });
+
+  test('returns \'INVALID DATE\' string when an European date is passed in as American', () => {
+    const input1ToAmerican = convertDateToFormatType('AMERICAN', 'REGULAR', european3);
+    expect(input1ToAmerican).toEqual('INVALID DATE');
   });
 });
 
