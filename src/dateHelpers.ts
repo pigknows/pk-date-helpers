@@ -427,6 +427,8 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
           : `${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${currentYear}`;
       } else if (inputDate.length === 6) {
         return `${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-20${inputDate.slice(4)}`;
+      } else if (inputDate.length !== 8) {
+        throw new Error(`${inputDate} does match '${formatType.toUpperCase()}' format or any of its shortcuts.`)
       } else {
         return inputDate;
       }
@@ -457,6 +459,8 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
         return `${luxonDate.toFormat('yy')}-${luxonDate.toFormat('ooo')}`;
       } else if (inputDate.length === 8) {
         return convertDateToFormatType('REGULAR', formatType, inputDate);
+      } else if (inputDate.length !== 5) {
+        throw new Error(`${inputDate} does match 'JULIAN' format or any of its shortcuts.`)
       } else {
         return inputDate;
       }
@@ -470,6 +474,8 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
           : date;
       } else if (inputDate.length === 6) {
         return `20${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${inputDate.slice(4)}`;
+      } else if (inputDate.length !== 8) {
+        throw new Error(`${inputDate} does match 'REGULAR' format or any of its shortcuts.`);
       } else {
         return inputDate;
       }
@@ -487,6 +493,8 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
       } else if (inputDate.length === 6) {
         const regularDate = `20${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${inputDate.slice(4)}`;
         return convertDateToFormatType('REGULAR', 'NEWSHAM', regularDate);
+      } else if (inputDate.length !== 5) {
+        throw new Error(`${inputDate} does match 'NEWSHAM' format or any of its shortcuts.`);
       } else {
         return inputDate;
       }
@@ -507,6 +515,8 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
       } else if (inputDate.length === 6) {
         const regularDate = `20${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${inputDate.slice(4)}`;
         return convertDateToFormatType('REGULAR', 'THOUSAND', regularDate);
+      } else if (inputDate.length !== 5) {
+        throw new Error(`${inputDate} does match 'THOUSAND' format or any of its shortcuts.`);
       } else {
         return inputDate;
       }

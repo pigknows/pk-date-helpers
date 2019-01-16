@@ -3,7 +3,6 @@ import {
   american1,
   currentYear,
   european1,
-  lastYear,
   julian1,
   newsham1,
   regular1,
@@ -12,7 +11,6 @@ import {
 } from './dataEntryDateHelpers.test';
 
 const currentYearShort = currentYear.toString().slice(2);
-const lastYearShort = lastYear.toString().slice(2);
 
 describe('Report Format from Regular conversions', () => {
   test('%b%d format', () => {
