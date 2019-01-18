@@ -447,7 +447,7 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
       } else if (inputDate.length === 6) {
         return `${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-20${inputDate.slice(4)}`;
       } else if (inputDate.length !== 8) {
-        throw new Error(`${inputDate} does match '${formatType.toUpperCase()}' format or any of its shortcuts.`)
+        throw new Error(`${inputDate} does not match '${formatType.toUpperCase()}' format or any of its shortcuts.`)
       } else {
         return inputDate;
       }
@@ -455,18 +455,24 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
       if (inputDate.length < 4) {
         const paddedDate = `${currentYearEnd}-${padNum(inputDate, 3)}`;
         const regularizedDate = convertDateToFormatType('JULIAN', 'Regular', paddedDate);
-        return detectIfFutureDate(regularizedDate)
-          ? `${(currentYear - 1).toString().slice(2)}-${padNum(inputDate, 3)}`
-          : `${currentYearEnd}-${padNum(inputDate, 3)}`;
+        if (detectIfValidPKDate(regularizedDate)) {
+          return detectIfFutureDate(regularizedDate)
+            ? `${(currentYear - 1).toString().slice(2)}-${padNum(inputDate, 3)}`
+            : `${currentYearEnd}-${padNum(inputDate, 3)}`;
+        }
+        throw new Error(`${inputDate} does not match 'JULIAN' format or any of its shortcuts.`);
       } else if (inputDate.length === 4) {
         const luxonDate = DateTime.fromObject({
           year: currentYear,
           month: parseInt(inputDate.slice(0, 2)),
           day: parseInt(inputDate.slice(2)),
         });
-        return detectIfFutureDate(luxonDate.toFormat('yyyy-MM-dd'))
-          ? `${(currentYear - 1).toString().slice(2)}-${luxonDate.toFormat('ooo')}`
-          : `${currentYearEnd}-${luxonDate.toFormat('ooo')}`;
+        if (luxonDate.isValid) {
+          return detectIfFutureDate(luxonDate.toFormat('yyyy-MM-dd'))
+            ? `${(currentYear - 1).toString().slice(2)}-${luxonDate.toFormat('ooo')}`
+            : `${currentYearEnd}-${luxonDate.toFormat('ooo')}`;
+        }
+        throw new Error(`${inputDate} does not match 'JULIAN' format or any of its shortcuts.`);
       } else if (inputDate.length === 5) {
         return `${inputDate.slice(0, 2)}-${inputDate.slice(2)}`;
       } else if (inputDate.length === 6) {
@@ -475,11 +481,14 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
           month: parseInt(inputDate.slice(2, 4)),
           day: parseInt(inputDate.slice(4)),
         });
-        return `${luxonDate.toFormat('yy')}-${luxonDate.toFormat('ooo')}`;
+        if (luxonDate.isValid) {
+          return `${luxonDate.toFormat('yy')}-${luxonDate.toFormat('ooo')}`;
+        }
+        throw new Error(`${inputDate} does not match 'JULIAN' format or any of its shortcuts.`);
       } else if (inputDate.length === 8) {
-        return convertDateToFormatType('REGULAR', formatType, inputDate);
+        return convertDateToFormatType('REGULAR', 'JULIAN', inputDate);
       } else if (inputDate.length !== 5) {
-        throw new Error(`${inputDate} does match 'JULIAN' format or any of its shortcuts.`)
+        throw new Error(`${inputDate} does not match 'JULIAN' format or any of its shortcuts.`);
       } else {
         return inputDate;
       }
@@ -494,7 +503,7 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
       } else if (inputDate.length === 6) {
         return `20${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${inputDate.slice(4)}`;
       } else if (inputDate.length !== 8) {
-        throw new Error(`${inputDate} does match 'REGULAR' format or any of its shortcuts.`);
+        throw new Error(`${inputDate} does not match 'REGULAR' format or any of its shortcuts.`);
       } else {
         return inputDate;
       }
@@ -511,9 +520,12 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
         return `1${inputDate}`
       } else if (inputDate.length === 6) {
         const regularDate = `20${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${inputDate.slice(4)}`;
-        return convertDateToFormatType('REGULAR', 'NEWSHAM', regularDate);
+        if (detectIfValidPKDate(regularDate)) {
+          return convertDateToFormatType('REGULAR', 'NEWSHAM', regularDate);
+        }
+        throw new Error(`${inputDate} does not match 'NEWSHAM' format or any of its shortcuts.`);
       } else if (inputDate.length !== 5) {
-        throw new Error(`${inputDate} does match 'NEWSHAM' format or any of its shortcuts.`);
+        throw new Error(`${inputDate} does not match 'NEWSHAM' format or any of its shortcuts.`);
       } else {
         return inputDate;
       }
@@ -528,14 +540,20 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
           : paddedDate;
       } else if (inputDate.length === 4) {
         const regularDate = `${currentYear}-${inputDate.slice(0, 2)}-${inputDate.slice(2)}`;
-        return detectIfFutureDate(regularDate)
-          ? convertDateToFormatType('REGULAR', 'THOUSAND', regularDate.replace(currentYear.toString(), (currentYear-1).toString()))
-          : convertDateToFormatType('REGULAR', 'THOUSAND', regularDate);
+        if (detectIfValidPKDate(regularDate)) {
+          return detectIfFutureDate(regularDate)
+            ? convertDateToFormatType('REGULAR', 'THOUSAND', regularDate.replace(currentYear.toString(), (currentYear-1).toString()))
+            : convertDateToFormatType('REGULAR', 'THOUSAND', regularDate);
+        }
+        throw new Error(`${inputDate} does not match 'THOUSAND' format or any of its shortcuts.`);
       } else if (inputDate.length === 6) {
         const regularDate = `20${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${inputDate.slice(4)}`;
-        return convertDateToFormatType('REGULAR', 'THOUSAND', regularDate);
+        if (detectIfValidPKDate(regularDate)) {
+          return convertDateToFormatType('REGULAR', 'THOUSAND', regularDate);
+        }
+        throw new Error(`${inputDate} does not match 'THOUSAND' format or any of its shortcuts.`);
       } else if (inputDate.length !== 5) {
-        throw new Error(`${inputDate} does match 'THOUSAND' format or any of its shortcuts.`);
+        throw new Error(`${inputDate} does not match 'THOUSAND' format or any of its shortcuts.`);
       } else {
         return inputDate;
       }

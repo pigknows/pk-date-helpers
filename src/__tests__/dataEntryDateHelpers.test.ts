@@ -75,6 +75,10 @@ describe('American Format Direct Conversion:', () => {
     const input1ToAmerican = convertDateToFormatType('AMERICAN', 'REGULAR', european3);
     expect(input1ToAmerican).toEqual('INVALID DATE');
   });
+
+  test('throws when input length doesn\'t match AMERICAN or any of its shortcuts', () => {
+    expect(() => convertDateToFormatType('AMERICAN', 'REGULAR', '12')).toThrow();
+  });
 });
 
 describe('European Format Direct Conversion', () => {
@@ -91,6 +95,10 @@ describe('European Format Direct Conversion', () => {
   test('converts THOUSAND date input into expected format', () => {
     const input1ToEuropean = convertDateToFormatType('THOUSAND', 'European', thousand1);
     expect(input1ToEuropean).toEqual(european1);
+  });
+
+  test('throws when input length doesn\'t match EUROPEAN or any of its shortcuts', () => {
+    expect(() => convertDateToFormatType('EUROPEAN', 'REGULAR', '12')).toThrow();
   });
 });
 
@@ -126,6 +134,10 @@ describe('Julian Format Direct Conversion', () => {
     const input1ToJulian = convertDateToFormatType('THOUSAND', 'Julian', thousand1);
     expect(input1ToJulian).toEqual(julian1);
   });
+
+  test('throws when input length doesn\'t match JULIAN or any of its shortcuts', () => {
+    expect(() => convertDateToFormatType('JULIAN', 'REGULAR', '123456')).toThrow();
+  });
 });
 
 describe('Newsham Format Direct Conversion', () => {
@@ -142,6 +154,14 @@ describe('Newsham Format Direct Conversion', () => {
   test('converts THOUSAND date input into expected format', () => {
     const input1ToNewsham = convertDateToFormatType('THOUSAND', 'newsham', thousand1);
     expect(input1ToNewsham).toEqual(newsham1);
+  });
+
+  test('throws when input length doesn\'t match NEWSHAM or any of its shortcuts', () => {
+    expect(() => convertDateToFormatType('NEWSHAM', 'REGULAR', '1234567')).toThrow();
+  });
+
+  test('throws when an invalid date is entered for a correct shortcut length', () => {
+    expect(() => convertDateToFormatType('NEWSHAM', 'REGULAR', '123456')).toThrow();
   });
 });
 
@@ -160,6 +180,11 @@ describe('Regular Format Direct Conversion', () => {
     const input1ToRegular = convertDateToFormatType('THOUSAND', 'regular', thousand1);
     expect(input1ToRegular).toEqual(regular1);
   });
+
+  // invalid input
+  test('throws when input length doesn\'t match REGULAR or any of its shortcuts', () => {
+    expect(() => convertDateToFormatType('REGULAR', 'THOUSAND', '1')).toThrow();
+  });
 });
 
 describe('Thousand Format Direct Conversion', () => {
@@ -176,5 +201,9 @@ describe('Thousand Format Direct Conversion', () => {
   test('converts NEWSHAM date input into expected format', () => {
     const input1ToThousand = convertDateToFormatType('NEWSHAM', 'THOUSAND', newsham1);
     expect(input1ToThousand).toEqual(thousand1);
-  })
+  });
+
+  test('throws when input length doesn\'t match THOUSAND or any of its shortcuts', () => {
+    expect(() => convertDateToFormatType('THOUSAND', 'REGULAR', '1234567')).toThrow();
+  });
 });
