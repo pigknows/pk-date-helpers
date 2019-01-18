@@ -596,6 +596,10 @@ export function convertPercentDateFormat(destinationFormat: ReportFormats | 'def
     regularDate = `${regularDate.slice(0,4)}-${regularDate.slice(4,6)}-${regularDate.slice(6)}`;
   }
 
+  if (!detectIfValidPKDate(regularDate)) {
+    throw new Error(`${date} does not match ${destinationFormat} format or any of its shortcuts.`);
+  }
+
   switch (destinationFormat.replace(/\s/g, '').replace(/\,/g, '')) {
     case '%b%d':
       return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('MMMdd');
