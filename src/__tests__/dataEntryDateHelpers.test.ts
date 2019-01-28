@@ -76,6 +76,10 @@ describe('American Format Direct Conversion:', () => {
     expect(input1ToAmerican).toEqual('INVALID DATE');
   });
 
+  test('returns \'INVALID DATE\' when day / month are invalid numbers', () => {
+    expect(convertDateToFormatType('EUROPEAN', 'REGULAR', '4040')).toEqual('INVALID DATE');
+  })
+
   test('throws when input length doesn\'t match AMERICAN or any of its shortcuts', () => {
     expect(() => convertDateToFormatType('AMERICAN', 'REGULAR', '12')).toThrow();
   });
