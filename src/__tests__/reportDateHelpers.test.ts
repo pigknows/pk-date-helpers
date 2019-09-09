@@ -78,7 +78,7 @@ describe('Report Format from Regular conversions', () => {
   });
 
   test('%j', () => {
-    expect(convertPercentDateFormat('%j', regular1)).toEqual(julian1.slice(2));
+    expect(convertPercentDateFormat('%j', regular1)).toEqual(julian1.slice(3));
   });
 
   test('%J', () => {
