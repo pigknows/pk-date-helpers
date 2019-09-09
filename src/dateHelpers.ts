@@ -634,7 +634,7 @@ export function convertPercentDateFormat(destinationFormat: ReportFormats | 'def
     case '%m/%d/%Y':
       return convertDateToFormatType('REGULAR', 'AMERICAN', regularDate).replace(/\-/g, '/');
     case '%j': // 3-digit julian
-      return convertDateToFormatType('REGULAR', 'JULIAN', regularDate).slice(2);
+      return convertDateToFormatType('REGULAR', 'JULIAN', regularDate).slice(3);
     case '%J': // full julian
       return convertDateToFormatType('REGULAR', 'JULIAN', regularDate);
     case '%N': // full newsham
