@@ -8,8 +8,7 @@ Supports conversions from all of PigKnows date formats from any format into any 
 3. ISO / Regular (yyyy-MM-dd)
 4. Julian (yy-ooo) -- o meaning ordinal, or day out of 365
 5. Newsham (5 digit and 3 digit)
-6. Regular / ISO (yyyy-MM-dd)
-7. Thousand (5 digits and 3 digit)
+6. Thousand (5 digits and 3 digit)
 
 ## Supported % Formats: (case sensitive)
 1. '%b%d' - Jan02
