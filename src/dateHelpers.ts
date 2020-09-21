@@ -390,7 +390,7 @@ export function convertDateToFormatType(
 };
 
 export function detectIfFutureDate(regularDate) {
-  const currentDateTime = DateTime.local();
+  const currentDateTime = DateTime.local().plus({ days: 1 });
   const comparedDateTime = DateTime.fromObject({
     day: parseInt(regularDate.slice(8, 10)),
     month: parseInt(regularDate.slice(5, 7)),
