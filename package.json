@@ -1,6 +1,6 @@
 {
   "name": "pk-date-helpers-new",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "date conversions used throughout pigknows products",
   "main": "index.js",
   "repository": {
