@@ -1,24 +1,21 @@
 {
-  "compilerOptions": {
-    "allowUnreachableCode": false,
-    "baseUrl": "./",
-    "experimentalDecorators": true,
-    "jsx": "preserve",
-    "lib": [
-      "es2017",
-      "dom"
+    "extends": "@tsconfig/recommended/tsconfig.json",
+    "compilerOptions": {
+        "declaration": true,
+        "outDir": "dist",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "pretty": true,
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "target": "ES5"
+    },
+    "include": [
+        "src/index.ts"
     ],
-    "module": "es2017",
-    "moduleResolution": "node",
-    "noImplicitUseStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "removeComments": true,
-    "rootDir": "./",
-    "sourceMap": true,
-    "target": "es2017",
-    "typeRoots": [
-      "node_modules/@types"
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts"
     ]
-  }
 }

@@ -1,4 +1,4 @@
-import { detectFormatType } from '../dateHelpers';
+import { detectFormatType } from '../src/dateHelpers';
 
 describe('Standard Format Detection', () => {
   test('Detects AMERICAN Format', () => {
@@ -113,7 +113,7 @@ describe('Percent Format Detection', () => {
 
   test('Detect %j Format', () => {
     const conflictingFormats = [];
-    expect(detectFormatType('001', false, conflictingFormats)).toEqual('%j')
+    expect(detectFormatType('001', false, conflictingFormats)).toEqual('%j');
   });
 
   test('Detect %J Format', () => {
