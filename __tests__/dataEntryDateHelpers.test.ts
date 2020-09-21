@@ -1,14 +1,14 @@
-import { convertDateToFormatType } from '../dateHelpers';
+import { convertDateToFormatType } from '../src/dateHelpers';
 
 // most of these map to December 31, 2018
 const currentYear = new Date().getFullYear();
 const lastYear = currentYear - 1;
 const american1 = `12-31-${currentYear}`;
 const american2 = `12-31-${lastYear}`; // future dates when using shortcut will be converted to previous year
-const american3 = `11-28-${lastYear}`; 
+const american3 = `11-28-${lastYear}`;
 const european1 = `31-12-${currentYear}`;
 const european2 = `31-12-${lastYear}`; // future dates when using shortcut will be converted to previous year
-const european3 = `28-11-${lastYear}`; 
+const european3 = `28-11-${lastYear}`;
 const iso1 = `${currentYear}-12-31`;
 const iso2 = `${lastYear}-12-31`; // future dates when using shortcut will be converted to previous year
 const julian1 = `${currentYear.toString().slice(2)}-365`;
@@ -78,7 +78,7 @@ describe('American Format Direct Conversion:', () => {
 
   test('returns \'INVALID DATE\' when day / month are invalid numbers', () => {
     expect(convertDateToFormatType('EUROPEAN', 'REGULAR', '4040')).toEqual('INVALID DATE');
-  })
+  });
 
   test('throws when input length doesn\'t match AMERICAN or any of its shortcuts', () => {
     expect(() => convertDateToFormatType('AMERICAN', 'REGULAR', '12')).toThrow();

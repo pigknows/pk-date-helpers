@@ -1,4 +1,4 @@
-import { convertDateToRegularString, convertPercentDateFormat } from '../dateHelpers';
+import { convertDateToRegularString, convertPercentDateFormat } from '../src/dateHelpers';
 import {
   american1,
   currentYear,
@@ -118,7 +118,7 @@ describe('Report Format from Regular conversions', () => {
   });
 
   test('%y%mm%d', () => {
-    // unsupported format
+    // @ts-expect-error unsupported format
     expect(convertPercentDateFormat('%y%mm%d', regular1)).toEqual(regular1);
   });
 });
@@ -243,10 +243,8 @@ describe('Report Format to Regular conversions', () => {
   });
 
   test('%y%mm%d', () => {
-    // unsupported format
-    /* tslint:disable */
+    // @ts-expect-error unsupported format
     expect(convertDateToRegularString('%y%mm%d', '80101')).toEqual('80101');
-    /* tslint:enable */
   });
 });
 

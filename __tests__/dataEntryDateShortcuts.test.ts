@@ -1,4 +1,4 @@
-import { convertShortcutDate } from '../dateHelpers';
+import { convertShortcutDate } from '../src/dateHelpers';
 import {
   american1,
   american2,

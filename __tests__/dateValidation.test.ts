@@ -1,10 +1,10 @@
 import { DateTime } from 'luxon';
-import { detectIfFutureDate, detectIfValidPKDate } from '../dateHelpers';
+import { detectIfFutureDate, detectIfValidPKDate } from '../src/dateHelpers';
 import { currentYear } from './dataEntryDateHelpers.test';
 
 const regularValid = '2019-01-01';
 const regularFuture1 = `${currentYear + 1}-01-01`;
-const regularFuture2 =  DateTime.local().plus({ days: 1 }).toFormat('yyyy-MM-dd');
+const regularFuture2 = DateTime.local().plus({ days: 1 }).toFormat('yyyy-MM-dd');
 const regularInvalidMonth = '2019-13-01';
 const regularInvalidDay = '2019-02-31';
 const regularInvalidDay2 = '2019-01-32';

@@ -1,30 +1,14 @@
+// babel.config.js
 module.exports = {
-  'env': {
-    'production': {
-      presets: [
-        ['@babel/preset-env', { modules: 'commonjs' }],
-        '@babel/preset-stage-3',
-        '@babel/preset-typescript',
-      ],
-      'plugins': [
-        [ 'babel-plugin-module-resolver', {
-          'extenions': ['.js', '.jsx', '.ts', '.tsx'],
-          'root': ['./src']
-        }]
-      ]
-    },
-    'test': {
-      presets: [
-        ['@babel/preset-env', { modules: 'commonjs'}],
-        '@babel/preset-stage-3',
-        '@babel/preset-typescript',
-      ],
-      'plugins': [
-        [ 'babel-plugin-module-resolver', {
-          'extenions': ['.js', '.jsx', '.ts', '.tsx'],
-          'root': ['./src']
-        }]
-      ],
-    }
-  }
-}
+  presets: [
+    [
+      '@babel/preset-env',
+      {
+        targets: {
+          node: 'current',
+        },
+      },
+    ],
+    '@babel/preset-typescript',
+  ],
+};
