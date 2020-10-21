@@ -89,7 +89,7 @@ const dateFormatsMap = {
 
 export function detectFormatType(date: string, preferStandard = true, ignoreFormats: string[] = []) {
   if (!date) {
-    console.error('Input date required.');
+    // console.error('Input date required.');
     return '';
   }
 
@@ -172,13 +172,13 @@ export function detectFormatType(date: string, preferStandard = true, ignoreForm
     }
   }
 
-  console.error(`Unknown format type for date: ${date.toString()}`);
+  // console.error(`Unknown format type for date: ${date.toString()}`);
   return '';
 }
 
 export function getConflictingFormatsForType(formatType: FormatNames | ReportFormats) {
   if (!formatType || typeof formatType !== 'string') {
-    console.error('Please use an existing format type supported by PigKnows.');
+    // console.error('Please use an existing format type supported by PigKnows.');
     return [];
   }
 
@@ -214,14 +214,14 @@ export function getConflictingFormatsForType(formatType: FormatNames | ReportFor
     return conflictsMap[formatType];
   }
 
-  console.error(`Unknown format type: ${formatType}`);
+  // console.error(`Unknown format type: ${formatType}`);
   return [];
 }
 
 export function convertDateToRegularString(inputFormat: FormatNames | ReportFormats, date: string): string {
-  if (typeof date !== 'string') {
-    console.error('Date must be a string.');
-  }
+  // if (typeof date !== 'string') {
+  //   console.error('Date must be a string.');
+  // }
 
   if (!date) {
     return '';
@@ -355,7 +355,7 @@ export function convertDateToFormatType(
   date: string): string {
 
   if (!date || !inputFormatType || !destinationFormatType) {
-    console.error('Trying to convert with missing fields.');
+    // console.error('Trying to convert with missing fields.');
     return '';
   }
 
@@ -567,13 +567,13 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
 }
 
 export function convertPercentDateFormat(destinationFormat: ReportFormats | 'default', date: string) {
-  if (destinationFormat === 'default') {
-    console.error('"default" format entered for percent date format. Please provide fallback.');
-  }
+  // if (destinationFormat === 'default') {
+  //   console.error('"default" format entered for percent date format. Please provide fallback.');
+  // }
 
-  if (destinationFormat.indexOf('%') === -1) {
-    console.error(`${destinationFormat} does not match percentage format type.`);
-  }
+  // if (destinationFormat.indexOf('%') === -1) {
+  //   console.error(`${destinationFormat} does not match percentage format type.`);
+  // }
 
   let regularDate = date;
   if (regularDate.length !== 10) {

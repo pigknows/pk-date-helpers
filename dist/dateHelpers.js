@@ -70,7 +70,7 @@ function detectFormatType(date, preferStandard, ignoreFormats) {
     if (preferStandard === void 0) { preferStandard = true; }
     if (ignoreFormats === void 0) { ignoreFormats = []; }
     if (!date) {
-        console.error('Input date required.');
+        // console.error('Input date required.');
         return '';
     }
     var standardFormatMap = {
@@ -154,13 +154,13 @@ function detectFormatType(date, preferStandard, ignoreFormats) {
             }
         }
     }
-    console.error("Unknown format type for date: " + date.toString());
+    // console.error(`Unknown format type for date: ${date.toString()}`);
     return '';
 }
 exports.detectFormatType = detectFormatType;
 function getConflictingFormatsForType(formatType) {
     if (!formatType || typeof formatType !== 'string') {
-        console.error('Please use an existing format type supported by PigKnows.');
+        // console.error('Please use an existing format type supported by PigKnows.');
         return [];
     }
     var conflictsMap = {
@@ -193,14 +193,14 @@ function getConflictingFormatsForType(formatType) {
     if (conflictsMap[formatType]) {
         return conflictsMap[formatType];
     }
-    console.error("Unknown format type: " + formatType);
+    // console.error(`Unknown format type: ${formatType}`);
     return [];
 }
 exports.getConflictingFormatsForType = getConflictingFormatsForType;
 function convertDateToRegularString(inputFormat, date) {
-    if (typeof date !== 'string') {
-        console.error('Date must be a string.');
-    }
+    // if (typeof date !== 'string') {
+    //   console.error('Date must be a string.');
+    // }
     if (!date) {
         return '';
     }
@@ -330,7 +330,7 @@ function convertDateToRegularString(inputFormat, date) {
 exports.convertDateToRegularString = convertDateToRegularString;
 function convertDateToFormatType(inputFormatType, destinationFormatType, date) {
     if (!date || !inputFormatType || !destinationFormatType) {
-        console.error('Trying to convert with missing fields.');
+        // console.error('Trying to convert with missing fields.');
         return '';
     }
     if (typeof date !== 'string') {
@@ -553,12 +553,12 @@ function convertShortcutDate(formatType, date) {
 }
 exports.convertShortcutDate = convertShortcutDate;
 function convertPercentDateFormat(destinationFormat, date) {
-    if (destinationFormat === 'default') {
-        console.error('"default" format entered for percent date format. Please provide fallback.');
-    }
-    if (destinationFormat.indexOf('%') === -1) {
-        console.error(destinationFormat + " does not match percentage format type.");
-    }
+    // if (destinationFormat === 'default') {
+    //   console.error('"default" format entered for percent date format. Please provide fallback.');
+    // }
+    // if (destinationFormat.indexOf('%') === -1) {
+    //   console.error(`${destinationFormat} does not match percentage format type.`);
+    // }
     var regularDate = date;
     if (regularDate.length !== 10) {
         // check for shortcut
