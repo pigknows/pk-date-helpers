@@ -349,11 +349,7 @@ export function convertDateToRegularString(inputFormat: FormatNames | ReportForm
   return DateTime.fromObject(dateConfigObj).toLocal().toFormat('yyyy-MM-dd');
 }
 
-export function convertDateToFormatType(
-  inputFormatType: FormatNames | ReportFormats,
-  destinationFormatType: FormatNames,
-  date: string): string {
-
+export function convertDateToFormatType(inputFormatType: FormatNames | ReportFormats, destinationFormatType: FormatNames, date: string): string {
   if (!date || !inputFormatType || !destinationFormatType) {
     console.error('Trying to convert with missing fields.');
     return '';
@@ -393,7 +389,7 @@ export function convertDateToFormatType(
   }
 };
 
-export function detectIfFutureDate(regularDate) {
+export function detectIfFutureDate(regularDate: string) {
   const currentDateTime = DateTime.local().plus({ days: 1 });
   const comparedDateTime = DateTime.fromObject({
     day: parseInt(regularDate.slice(8, 10)),
@@ -403,7 +399,7 @@ export function detectIfFutureDate(regularDate) {
   return currentDateTime < comparedDateTime;
 }
 
-export function detectIfValidPKDate(regularDate) {
+export function detectIfValidPKDate(regularDate: string) {
   const year = regularDate.slice(0, 4);
   const month = regularDate.slice(5, 7);
 

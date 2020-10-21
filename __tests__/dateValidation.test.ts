@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon';
-import { detectIfFutureDate, detectIfValidPKDate } from '../src/dateHelpers';
+import { detectIfFutureDate, detectIfValidPKDate } from '../src';
 import { currentYear } from './dataEntryDateHelpers.test';
 
 const regularValid = '2019-01-01';
@@ -30,6 +30,10 @@ describe('Detecting valid dates', () => {
 
   test('invalid day returns false', () => {
     expect(detectIfValidPKDate(regularInvalidDay2)).toEqual(false);
+  });
+
+  test('invalid day combo returns false', () => {
+    expect(detectIfValidPKDate(`${regularValid};${regularInvalidDay2}`)).toEqual(false);
   });
 
   test('invalid day for month (Feb 31) returns false', () => {

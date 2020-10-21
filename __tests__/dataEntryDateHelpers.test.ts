@@ -1,7 +1,7 @@
-import { convertDateToFormatType } from '../src/dateHelpers';
+import { convertDateToFormatType } from '../src';
 
 // most of these map to December 31, 2018
-const currentYear = new Date().getFullYear();
+const currentYear = 2019;
 const lastYear = currentYear - 1;
 const american1 = `12-31-${currentYear}`;
 const american2 = `12-31-${lastYear}`; // future dates when using shortcut will be converted to previous year
@@ -209,5 +209,12 @@ describe('Thousand Format Direct Conversion', () => {
 
   test('throws when input length doesn\'t match THOUSAND or any of its shortcuts', () => {
     expect(() => convertDateToFormatType('THOUSAND', 'REGULAR', '1234567')).toThrow();
+  });
+});
+
+describe('Multi-date conversion', () => {
+  test('converts REGULAR date input into expected format', () => {
+    const input1ToThousand = convertDateToFormatType('THOUSAND', 'THOUSAND', `11;1`);
+    expect(input1ToThousand).toEqual(`17011;17001`);
   });
 });

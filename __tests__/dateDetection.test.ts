@@ -1,4 +1,4 @@
-import { detectFormatType } from '../src/dateHelpers';
+import { detectFormatType } from '../src';
 
 describe('Standard Format Detection', () => {
   test('Detects AMERICAN Format', () => {
