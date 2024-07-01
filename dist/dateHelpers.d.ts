@@ -1,5 +1,5 @@
-export declare type FormatNames = 'AMERICAN' | 'american' | 'American' | 'EUROPEAN' | 'european' | 'European' | 'ISO' | 'iso' | 'Iso' | 'JULIAN' | 'Julian' | 'julian' | 'NEWSHAM' | 'Newsham' | 'newsham' | 'REGULAR' | 'Regular' | 'regular' | 'THOUSAND' | 'Thousand' | 'thousand';
-export declare type ReportFormats = '%b%d' | '%b%d%y' | '%b%d%Y' | '%d%b' | '%d%b%y' | '%d%b%Y' | '%d-%m-%y' | '%d/%m/%y' | '%d/%m/%Y' | '%m/%d' | '%m/%d/%y' | '%m/%d/%Y' | '%d-%m-%Y' | '%m-%d' | '%m-%d-%y' | '%m-%d-%Y' | '%j' | '%J' | '%N' | '%n' | '%t' | '%T' | '%y-%m-%d' | '%Y-%m-%d' | '%y/%m/%d' | '%Y/%m/%d';
+export type FormatNames = 'AMERICAN' | 'american' | 'American' | 'EUROPEAN' | 'european' | 'European' | 'ISO' | 'iso' | 'Iso' | 'JULIAN' | 'Julian' | 'julian' | 'NEWSHAM' | 'Newsham' | 'newsham' | 'REGULAR' | 'Regular' | 'regular' | 'THOUSAND' | 'Thousand' | 'thousand';
+export type ReportFormats = '%b%d' | '%b%d%y' | '%b%d%Y' | '%d%b' | '%d%b%y' | '%d%b%Y' | '%d-%m-%y' | '%d/%m/%y' | '%d/%m/%Y' | '%m/%d' | '%m/%d/%y' | '%m/%d/%Y' | '%d-%m-%Y' | '%m-%d' | '%m-%d-%y' | '%m-%d-%Y' | '%j' | '%J' | '%N' | '%n' | '%t' | '%T' | '%y-%m-%d' | '%Y-%m-%d' | '%y/%m/%d' | '%Y/%m/%d';
 export declare function detectFormatType(date: string, preferStandard?: boolean, ignoreFormats?: string[]): string;
 export declare function getConflictingFormatsForType(formatType: FormatNames | ReportFormats): any;
 export declare function convertDateToRegularString(inputFormat: FormatNames | ReportFormats, date: string): string;
