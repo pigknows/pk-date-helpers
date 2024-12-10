@@ -1,4 +1,5 @@
 import { DateTime, DateObjectUnits } from 'luxon';
+import type { FormatNames, ReportFormats } from './types'
 
 const currentYear = new Date().getFullYear();
 const NEWSHAM_DAY_ZERO = '1985-06-05';
@@ -21,21 +22,6 @@ function padNum(input: number | string, places = 2) {
   }
   return temp;
 }
-
-export type FormatNames = 'AMERICAN' | 'american' | 'American'
-  | 'EUROPEAN' | 'european' | 'European'
-  | 'ISO' | 'iso' | 'Iso'
-  | 'JULIAN' | 'Julian' | 'julian'
-  | 'NEWSHAM' | 'Newsham' | 'newsham'
-  | 'REGULAR' | 'Regular' | 'regular'
-  | 'THOUSAND' | 'Thousand' | 'thousand';
-
-export type ReportFormats = '%b%d' | '%b%d%y' |
-  '%b%d%Y' | '%d%b' | '%d%b%y' | '%d%b%Y' | '%d-%m-%y' |
-  '%d/%m/%y' | '%d/%m/%Y' | '%m/%d' | '%m/%d/%y' | '%m/%d/%Y' |
-  '%d-%m-%Y' | '%m-%d' | '%m-%d-%y' | '%m-%d-%Y' | '%j' |
-  '%J' | '%N' | '%n' | '%t' | '%T' | '%y-%m-%d' | '%Y-%m-%d' |
-  '%y/%m/%d' | '%Y/%m/%d';
 
 // dateFormatsMap requires Regular-like input
 // convert to regular first using helper function below
