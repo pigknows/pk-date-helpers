@@ -682,9 +682,9 @@ export function convertPercentDateFormat(destinationFormat: ReportFormats | 'def
     case '%d%b%Y':
       return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('ddMMMyyyy');
     case '%d-%m-%y':
-      return convertDateToFormatType('REGULAR', 'EUROPEAN', regularDate).slice(0, 9);
+      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('dd-MM-yy');
     case '%d/%m/%y':
-      return convertDateToFormatType('REGULAR', 'EUROPEAN', regularDate).slice(0, 9).replace(/\-/g, '/');
+      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('dd/MM/yy');
     case '%d-%m-%Y':
       return convertDateToFormatType('REGULAR', 'EUROPEAN', regularDate);
     case '%d/%m/%Y':
@@ -694,9 +694,9 @@ export function convertPercentDateFormat(destinationFormat: ReportFormats | 'def
     case '%m/%d':
       return convertDateToFormatType('REGULAR', 'AMERICAN', regularDate).slice(0, 5).replace(/\-/g, '/');
     case '%m-%d-%y':
-      return convertDateToFormatType('REGULAR', 'AMERICAN', regularDate).slice(0, 9);
+      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('MM-dd-yy');
     case '%m/%d/%y':
-      return convertDateToFormatType('REGULAR', 'AMERICAN', regularDate).slice(0, 9).replace(/\-/g, '/');
+      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('MM/dd/yy');
     case '%m-%d-%Y':
       return convertDateToFormatType('REGULAR', 'AMERICAN', regularDate);
     case '%m/%d/%Y':
