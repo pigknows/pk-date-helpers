@@ -2,6 +2,22 @@
 
 Supports conversions from all of PigKnows date formats from any format into any other format.
 
+## Install
+
+    yarn add @pigknowsdev/date-helpers
+
+The source lives at https://github.com/pigknows/pk-date-helpers. The package on npm is `@pigknowsdev/date-helpers`; the older unscoped `pk-date-helpers` package is no longer updated.
+
+## Releasing
+
+GitHub Actions publishes to npm when a version tag is pushed (`.github/workflows/publish.yml`). It builds `dist/` from `src/`, so a release never ships a stale build.
+
+1. Merge the change into `main`.
+2. On an up-to-date `main`, run `npm version <new version>`, for example `npm version 2.2.0`. This updates `package.json`, commits, and creates the tag `v2.2.0`.
+3. Push the commit and the tag: `git push origin main --follow-tags`.
+
+The workflow fails if the tag does not match the version in `package.json`. After it finishes, bump `@pigknowsdev/date-helpers` in each app that should get the change.
+
 ## Supported Standard Formats:
 1. American (MM-dd-yyyy)
 2. European (dd-MM-yyyy)
@@ -44,7 +60,7 @@ Supports conversions from all of PigKnows date formats from any format into any 
 #### convertDateToFormatType
     Usage:
 
-    import { convertDateToFormatType } from 'pk-date-helpers';
+    import { convertDateToFormatType } from '@pigknowsdev/date-helpers';
 
     ...
 
@@ -53,7 +69,7 @@ Supports conversions from all of PigKnows date formats from any format into any 
 #### convertDateToRegularString
     Usage:
 
-    import { convertDateToRegularString } from 'pk-date-helpers';
+    import { convertDateToRegularString } from '@pigknowsdev/date-helpers';
 
     ...
 
@@ -66,7 +82,7 @@ Used for % style date formats instead of the string formats ("European", "THOUSA
 
     Usage:
 
-    import { convertPercentDateFormat } from 'pk-date-helpers';
+    import { convertPercentDateFormat } from '@pigknowsdev/date-helpers';
 
     ...
 
@@ -94,7 +110,7 @@ Converts a shortcut of any format into its long form. For example, converting `0
 
     Usage:
 
-    import { convertShortcutDate } from 'pk-date-helpers';
+    import { convertShortcutDate } from '@pigknowsdev/date-helpers';
 
     ...
 
@@ -107,7 +123,7 @@ Detects the format of a string, if it matches a known date format. Optional para
 
     Usage:
 
-    import { detectFormatType } from 'pk-date-helpers';
+    import { detectFormatType } from '@pigknowsdev/date-helpers';
 
     ...
 
@@ -130,7 +146,7 @@ Returns an array of formats that may appear the same from a regex / structure pe
 
     Usage:
 
-    import { getConflictingFormatsForType } from 'pk-date-helpers';
+    import { getConflictingFormatsForType } from '@pigknowsdev/date-helpers';
 
     ...
 

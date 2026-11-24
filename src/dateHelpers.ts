@@ -1,5 +1,7 @@
 import { DateTime, DateObjectUnits } from 'luxon';
 import type { FormatNames, ReportFormats } from './types'
+// Apps import these types from 'dist/dateHelpers', where they lived before types.ts.
+export type { FormatNames, ReportFormats } from './types';
 
 const currentYear = new Date().getFullYear();
 const NEWSHAM_DAY_ZERO = '1985-06-05';

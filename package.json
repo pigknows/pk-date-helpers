@@ -4,11 +4,14 @@
   "author": "PigKnows Dev",
   "type": "module",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/pigknowsdev/pk-date-helpers#readme",
+  "homepage": "https://github.com/pigknows/pk-date-helpers#readme",
   "description": "date conversions used throughout pigknows products",
   "repository": {
     "type": "git",
-    "url": "git+https://bitbucket.org/pigknowsdev/pk-date-helpers.git"
+    "url": "git+https://github.com/pigknows/pk-date-helpers.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "node",
@@ -21,7 +24,8 @@
     "src"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc"
+    "build": "rm -rf dist && tsc",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "luxon": "^3.4.4"
