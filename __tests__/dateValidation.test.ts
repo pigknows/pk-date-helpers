@@ -39,4 +39,13 @@ describe('Detecting valid dates', () => {
   test('valid date returns true', () => {
     expect(detectIfValidPKDate(regularValid)).toEqual(true);
   });
+
+  // F198: next calendar year must stay valid so New Year shortcuts can resolve ahead
+  test('next calendar year returns true', () => {
+    expect(detectIfValidPKDate(`${currentYear + 1}-01-02`)).toEqual(true);
+  });
+
+  test('two years ahead returns false', () => {
+    expect(detectIfValidPKDate(`${currentYear + 2}-01-02`)).toEqual(false);
+  });
 });

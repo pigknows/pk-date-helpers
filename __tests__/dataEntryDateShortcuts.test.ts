@@ -288,3 +288,34 @@ describe('Thousand Shortcut Date Conversion', () => {
     expect(() => convertShortcutDate('thousand', '17123456')).toThrow();
   });
 });
+
+describe('F198 daysAheadAllowed window:', () => {
+  const { DateTime } = require('luxon');
+  const today = DateTime.local().startOf('day');
+  const plus2 = today.plus({ days: 2 });
+  const plus10 = today.plus({ days: 10 });
+  const americanPlus2 = plus2.toFormat('MM/dd');
+  const americanPlus10 = plus10.toFormat('MM/dd');
+
+  test('without window, a date more than one day ahead uses last year', () => {
+    const result = convertShortcutDate('AMERICAN', americanPlus2);
+    expect(result.endsWith(String(currentYear - 1))).toEqual(true);
+  });
+
+  test('with window covering +2 days, that shortcut stays this year', () => {
+    const result = convertShortcutDate('AMERICAN', americanPlus2, 5);
+    expect(result).toEqual(`${plus2.toFormat('MM-dd')}-${currentYear}`);
+  });
+
+  test('with window 5, a date 10 days ahead still uses last year', () => {
+    const result = convertShortcutDate('AMERICAN', americanPlus10, 5);
+    expect(result.endsWith(String(currentYear - 1))).toEqual(true);
+  });
+
+  test('REGULAR shortcut with window matches AMERICAN year choice', () => {
+    const mmdd = plus2.toFormat('MMdd');
+    expect(convertShortcutDate('REGULAR', mmdd, 5)).toEqual(
+      `${currentYear}-${plus2.toFormat('MM-dd')}`,
+    );
+  });
+});

@@ -206,7 +206,11 @@ export function getConflictingFormatsForType(formatType: FormatNames | ReportFor
   return [];
 }
 
-export function convertDateToRegularString(inputFormat: FormatNames | ReportFormats, date: string): string {
+export function convertDateToRegularString(
+  inputFormat: FormatNames | ReportFormats,
+  date: string,
+  daysAheadAllowed?: number,
+): string {
   // if (typeof date !== 'string') {
   //   console.error('Date must be a string.');
   // }
@@ -221,7 +225,7 @@ export function convertDateToRegularString(inputFormat: FormatNames | ReportForm
     case 'American':
     case 'american':
       if (dateStr.length !== 8) {
-        dateStr = convertShortcutDate('AMERICAN', dateStr).replace(/\D/g, '');
+        dateStr = convertShortcutDate('AMERICAN', dateStr, daysAheadAllowed).replace(/\D/g, '');
       } else if (date.length === 10 && (date[4] === '-')) {
         // regular format was entered. convert.
         dateConfigObj.month = parseInt(date.slice(5, 7));
@@ -237,7 +241,7 @@ export function convertDateToRegularString(inputFormat: FormatNames | ReportForm
     case 'European':
     case 'european':
       if (dateStr.length !== 8) {
-        dateStr = convertShortcutDate('European', dateStr).replace(/\D/g, '');
+        dateStr = convertShortcutDate('European', dateStr, daysAheadAllowed).replace(/\D/g, '');
       } else if (date.length === 10 && (date[4] === '-')) {
         // regular format was entered. convert.
         dateConfigObj.month = parseInt(date.slice(5, 7));
@@ -255,7 +259,7 @@ export function convertDateToRegularString(inputFormat: FormatNames | ReportForm
     case 'Regular':
     case 'regular':
       if (dateStr.length !== 8) {
-        dateStr = convertShortcutDate('REGULAR', dateStr).replace(/\D/g, '');
+        dateStr = convertShortcutDate('REGULAR', dateStr, daysAheadAllowed).replace(/\D/g, '');
       }
       dateConfigObj.year = parseInt(dateStr.slice(0, 4));
       dateConfigObj.month = parseInt(dateStr.slice(4, 6));
@@ -266,7 +270,7 @@ export function convertDateToRegularString(inputFormat: FormatNames | ReportForm
     case 'Julian':
     case 'julian':
       if (dateStr.length !== 5) {
-        dateStr = convertShortcutDate('JULIAN', dateStr).replace(/\D/g, '');
+        dateStr = convertShortcutDate('JULIAN', dateStr, daysAheadAllowed).replace(/\D/g, '');
       }
       dateConfigObj.year = parseInt(`20${dateStr.slice(0, 2)}`);
       dateConfigObj.ordinal = parseInt(dateStr.slice(2, 6));
@@ -278,7 +282,7 @@ export function convertDateToRegularString(inputFormat: FormatNames | ReportForm
     case 'Thousand':
     case 'thousand':
       if (dateStr.length !== 5) {
-        dateStr = convertShortcutDate(inputFormat, dateStr).replace(/\D/g, '');
+        dateStr = convertShortcutDate(inputFormat, dateStr, daysAheadAllowed).replace(/\D/g, '');
       }
       const cycles = parseInt(dateStr.slice(0, 2));
       const leftover = parseInt(dateStr.slice(2));
@@ -314,16 +318,24 @@ export function convertDateToRegularString(inputFormat: FormatNames | ReportForm
     case '%m/%d/%Y':
       return DateTime.fromFormat(dateStr, 'MMddyyyy').toFormat('yyyy-MM-dd');
     case '%j':
-      return convertDateToRegularString('JULIAN', convertShortcutDate('JULIAN', dateStr));
+      return convertDateToRegularString(
+        'JULIAN',
+        convertShortcutDate('JULIAN', dateStr, daysAheadAllowed),
+        daysAheadAllowed,
+      );
     case '%N':
-      return convertDateToRegularString('NEWSHAM', dateStr);
+      return convertDateToRegularString('NEWSHAM', dateStr, daysAheadAllowed);
     case '%n':
-      return convertDateToRegularString('NEWSHAM', convertShortcutDate('NEWSHAM', dateStr));
+      return convertDateToRegularString(
+        'NEWSHAM',
+        convertShortcutDate('NEWSHAM', dateStr, daysAheadAllowed),
+        daysAheadAllowed,
+      );
     case '%t':
-      const shortcutToFull = convertShortcutDate('THOUSAND', dateStr);
-      return convertDateToRegularString('THOUSAND', shortcutToFull);
+      const shortcutToFull = convertShortcutDate('THOUSAND', dateStr, daysAheadAllowed);
+      return convertDateToRegularString('THOUSAND', shortcutToFull, daysAheadAllowed);
     case '%T':
-      return convertDateToRegularString('THOUSAND', dateStr);
+      return convertDateToRegularString('THOUSAND', dateStr, daysAheadAllowed);
     case '%y-%m-%d':
     case '%y/%m/%d':
       return DateTime.fromFormat(dateStr, 'yyMMdd').toFormat('yyyy-MM-dd');
@@ -340,7 +352,9 @@ export function convertDateToRegularString(inputFormat: FormatNames | ReportForm
 export function convertDateToFormatType(
   inputFormatType: FormatNames | ReportFormats,
   destinationFormatType: FormatNames,
-  date: string): string {
+  date: string,
+  daysAheadAllowed?: number,
+): string {
 
   if (!date || !inputFormatType || !destinationFormatType) {
     // console.error('Trying to convert with missing fields.');
@@ -354,7 +368,7 @@ export function convertDateToFormatType(
   const isInRegular = /^\d{4}-\d{2}-\d{2}$/.test(date.toString());
   let dateConvertedToRegular = isInRegular
     ? date.toString()
-    : convertDateToRegularString(inputFormatType, date);
+    : convertDateToRegularString(inputFormatType, date, daysAheadAllowed);
 
   if (!dateConvertedToRegular) {
     return '';
@@ -395,8 +409,8 @@ export function detectIfValidPKDate(regularDate) {
   const year = regularDate.slice(0, 4);
   const month = regularDate.slice(5, 7);
 
-  // check valid year
-  if (parseInt(year) < 1900 || (parseInt(year) > currentYear)) {
+  // F198: allow next calendar year so New Year shortcuts within the ahead window can resolve
+  if (parseInt(year) < 1900 || (parseInt(year) > currentYear + 1)) {
     return false;
   }
 
@@ -408,9 +422,48 @@ export function detectIfValidPKDate(regularDate) {
   return DateTime.fromISO(regularDate).isValid;
 }
 
+/**
+ * Year for a year-less shortcut assumed as thisYearYmd (yyyy-MM-dd).
+ * No daysAheadAllowed → same as detectIfFutureDate (this or last year).
+ * With N → this / last / next year using today..today+N (F198).
+ */
+function resolveYearForYearLess(thisYearYmd: string, daysAheadAllowed?: number): number {
+  const year = parseInt(thisYearYmd.slice(0, 4), 10);
+
+  if (daysAheadAllowed === undefined || daysAheadAllowed === null) {
+    return detectIfFutureDate(thisYearYmd) ? year - 1 : year;
+  }
+
+  const candidateThis = DateTime.fromISO(thisYearYmd).startOf('day');
+  if (!candidateThis.isValid) {
+    return year;
+  }
+
+  const now = DateTime.local().startOf('day');
+  const n = Number(daysAheadAllowed);
+  const maxAllowed = now.plus({ days: Number.isFinite(n) ? Math.max(0, n) : 1 });
+
+  if (candidateThis > maxAllowed) {
+    return year - 1;
+  }
+
+  if (candidateThis < now) {
+    const candidateNext = candidateThis.plus({ years: 1 });
+    if (candidateNext <= maxAllowed) {
+      return year + 1;
+    }
+  }
+
+  return year;
+}
+
 // shortcut used must belong to the destination formatType.
 // example: 4 digit American format means something different than 4 digit European
-export function convertShortcutDate(formatType: FormatNames, date: string) {
+export function convertShortcutDate(
+  formatType: FormatNames,
+  date: string,
+  daysAheadAllowed?: number,
+) {
   const inputDate = date.toString().replace(/\D/g, '');
   const currentYear = (new Date()).getFullYear();
   const currentYearEnd = currentYear.toString().slice(2);
@@ -433,9 +486,11 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
         const day = formatType.toUpperCase() === 'EUROPEAN'
           ? inputDate.slice(0, 2)
           : inputDate.slice(2, 4);
-        return detectIfFutureDate(`${currentYear}-${month}-${day}`)
-          ? `${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${currentYear - 1}`
-          : `${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${currentYear}`;
+        const year = resolveYearForYearLess(
+          `${currentYear}-${month}-${day}`,
+          daysAheadAllowed,
+        );
+        return `${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${year}`;
       } else if (inputDate.length === 6) {
         return `${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-20${inputDate.slice(4)}`;
       } else if (inputDate.length !== 8) {
@@ -448,9 +503,8 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
         const paddedDate = `${currentYearEnd}-${padNum(inputDate, 3)}`;
         const regularizedDate = convertDateToFormatType('JULIAN', 'Regular', paddedDate);
         if (detectIfValidPKDate(regularizedDate)) {
-          return detectIfFutureDate(regularizedDate)
-            ? `${(currentYear - 1).toString().slice(2)}-${padNum(inputDate, 3)}`
-            : `${currentYearEnd}-${padNum(inputDate, 3)}`;
+          const year = resolveYearForYearLess(regularizedDate, daysAheadAllowed);
+          return `${year.toString().slice(2)}-${padNum(inputDate, 3)}`;
         }
         throw new Error(`${inputDate} does not match 'JULIAN' format or any of its shortcuts.`);
       } else if (inputDate.length === 4) {
@@ -460,9 +514,16 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
           day: parseInt(inputDate.slice(2)),
         });
         if (luxonDate.isValid) {
-          return detectIfFutureDate(luxonDate.toFormat('yyyy-MM-dd'))
-            ? `${(currentYear - 1).toString().slice(2)}-${luxonDate.toFormat('ooo')}`
-            : `${currentYearEnd}-${luxonDate.toFormat('ooo')}`;
+          const year = resolveYearForYearLess(
+            luxonDate.toFormat('yyyy-MM-dd'),
+            daysAheadAllowed,
+          );
+          const ordinalDate = DateTime.fromObject({
+            year,
+            month: parseInt(inputDate.slice(0, 2)),
+            day: parseInt(inputDate.slice(2)),
+          });
+          return `${year.toString().slice(2)}-${ordinalDate.toFormat('ooo')}`;
         }
         throw new Error(`${inputDate} does not match 'JULIAN' format or any of its shortcuts.`);
       } else if (inputDate.length === 5) {
@@ -489,9 +550,8 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
       // allowed shortcuts: MMdd and yyMMdd
       if (inputDate.length === 4) {
         const date = `${currentYear}-${inputDate.slice(0, 2)}-${inputDate.slice(2)}`;
-        return detectIfFutureDate(date)
-          ? `${currentYear - 1}-${inputDate.slice(0, 2)}-${inputDate.slice(2)}`
-          : date;
+        const year = resolveYearForYearLess(date, daysAheadAllowed);
+        return `${year}-${inputDate.slice(0, 2)}-${inputDate.slice(2)}`;
       } else if (inputDate.length === 6) {
         return `20${inputDate.slice(0, 2)}-${inputDate.slice(2, 4)}-${inputDate.slice(4)}`;
       } else if (inputDate.length !== 8) {
@@ -505,9 +565,14 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
       if (inputDate.length < 4) {
         const paddedDate = `${currentNewshamCycle}${padNum(inputDate, 3)}`;
         const regularizedDate = convertDateToFormatType('NEWSHAM', 'REGULAR', paddedDate);
-        return detectIfFutureDate(regularizedDate)
-          ? `${parseInt(currentNewshamCycle) - 1}${padNum(inputDate, 3)}`
-          : paddedDate;
+        const year = resolveYearForYearLess(regularizedDate, daysAheadAllowed);
+        if (year < currentYear) {
+          return `${parseInt(currentNewshamCycle) - 1}${padNum(inputDate, 3)}`;
+        }
+        if (year > currentYear) {
+          return `${parseInt(currentNewshamCycle) + 1}${padNum(inputDate, 3)}`;
+        }
+        return paddedDate;
       } else if (inputDate.length === 4) {
         return `1${inputDate}`;
       } else if (inputDate.length === 6) {
@@ -527,15 +592,23 @@ export function convertShortcutDate(formatType: FormatNames, date: string) {
       if (inputDate.length < 4) {
         const paddedDate = `${currentCycle}${padNum(inputDate, 3)}`;
         const regularizedDate = convertDateToFormatType('THOUSAND', 'REGULAR', paddedDate);
-        return detectIfFutureDate(regularizedDate)
-          ? `${parseInt(currentCycle) - 1}${padNum(inputDate, 3)}`
-          : paddedDate;
+        const year = resolveYearForYearLess(regularizedDate, daysAheadAllowed);
+        if (year < currentYear) {
+          return `${parseInt(currentCycle) - 1}${padNum(inputDate, 3)}`;
+        }
+        if (year > currentYear) {
+          return `${parseInt(currentCycle) + 1}${padNum(inputDate, 3)}`;
+        }
+        return paddedDate;
       } else if (inputDate.length === 4) {
         const regularDate = `${currentYear}-${inputDate.slice(0, 2)}-${inputDate.slice(2)}`;
         if (detectIfValidPKDate(regularDate)) {
-          return detectIfFutureDate(regularDate)
-            ? convertDateToFormatType('REGULAR', 'THOUSAND', regularDate.replace(currentYear.toString(), (currentYear - 1).toString()))
-            : convertDateToFormatType('REGULAR', 'THOUSAND', regularDate);
+          const year = resolveYearForYearLess(regularDate, daysAheadAllowed);
+          return convertDateToFormatType(
+            'REGULAR',
+            'THOUSAND',
+            regularDate.replace(currentYear.toString(), year.toString()),
+          );
         }
         throw new Error(`${inputDate} does not match 'THOUSAND' format or any of its shortcuts.`);
       } else if (inputDate.length === 6) {
