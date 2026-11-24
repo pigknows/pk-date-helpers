@@ -19,3 +19,5 @@ export {
   detectIfValidPKDate,
   getConflictingFormatsForType,
 }
+
+export type { FormatNames, ReportFormats } from './types';

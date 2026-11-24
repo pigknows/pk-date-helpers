@@ -1,0 +1,43 @@
+name: Publish to npm
+
+# Publishes @pigknowsdev/date-helpers when a version tag (v2.2.0) is pushed.
+# Authentication is npm trusted publishing (OIDC): there is no npm token to store or rotate.
+# The package's Trusted Publisher setting on npmjs.com names this file, so renaming it breaks publishing.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write # lets npm verify the publish came from this workflow
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # Trusted publishing needs Node 22.14+ and npm 11.5.1+. Node 24 ships both.
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Check the tag matches package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $version"
+            exit 1
+          fi
+
+      - name: Install
+        run: yarn install --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: Publish
+        run: npm publish
