@@ -24,20 +24,21 @@ function padNum(input: number | string, places = 2) {
   return temp;
 }
 
-// dateFormatsMap requires Regular-like input
+const INVALID_DATE = 'INVALID DATE';
+
+// Luxon formats an impossible day (2026-02-31) as the text 'Invalid DateTime'.
+function toRegularString(luxonDate: DateTime): string {
+  return luxonDate.isValid ? luxonDate.toFormat('yyyy-MM-dd') : INVALID_DATE;
+}
+
+// dateFormatsMap requires a valid luxon date
 // convert to regular first using helper function below
 const dateFormatsMap = {
   AMERICAN: 'MM-dd-yyyy',
   EUROPEAN: 'dd-MM-yyyy',
   ISO: 'yyyy-MM-dd',
   JULIAN: 'yy-ooo',
-  NEWSHAM: (date: string): string => {
-    const temp = date.toString().replace(/\D/g, '');
-    const luxonDate = DateTime.fromObject({
-      day: parseInt(temp.slice(6, 8)),
-      month: parseInt(temp.slice(4, 6)),
-      year: parseInt(temp.slice(0, 4)),
-    });
+  NEWSHAM: (luxonDate: DateTime): string => {
     const dayZero = NEWSHAM_DAY_ZERO.toString().replace(/\D/g, '');
     const luxonZeroDay = DateTime.fromObject({
       day: parseInt(dayZero.slice(6, 8)),
@@ -52,13 +53,7 @@ const dateFormatsMap = {
     return `${padNum(thousands)}${padNum(dayInYear, 3)}`;
   },
   REGULAR: 'yyyy-MM-dd',
-  THOUSAND: (date: string): string => {
-    const temp = date.toString().replace(/\D/g, '');
-    const luxonDate = DateTime.fromObject({
-      day: parseInt(temp.slice(6, 8)),
-      month: parseInt(temp.slice(4, 6)),
-      year: parseInt(temp.slice(0, 4)),
-    });
+  THOUSAND: (luxonDate: DateTime): string => {
     const dayZero = THOUSAND_DAY_ZERO.toString().replace(/\D/g, '');
     const luxonZeroDay = DateTime.fromObject({
       day: parseInt(dayZero.slice(6)),
@@ -254,6 +249,7 @@ export function convertDateToRegularString(
       break;
     case 'ISO':
     case 'iso':
+    case 'Iso':
     case 'REGULAR':
     case 'Regular':
     case 'regular':
@@ -288,34 +284,34 @@ export function convertDateToRegularString(
       const dayZero = inputFormat.toUpperCase() === 'NEWSHAM'
         ? NEWSHAM_DAY_ZERO
         : THOUSAND_DAY_ZERO;
-      return DateTime.fromISO(dayZero).plus({ days: (cycles * 1000) + leftover }).toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromISO(dayZero).plus({ days: (cycles * 1000) + leftover }));
     case '%b%d':
-      return DateTime.fromFormat(dateStr, 'MMMdd').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'MMMdd'));
     case '%b%d%y':
-      return DateTime.fromFormat(dateStr, 'MMMddyy').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'MMMddyy'));
     case '%b%d%Y':
-      return DateTime.fromFormat(dateStr, 'MMMddyyyy').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'MMMddyyyy'));
     case '%d%b':
-      return DateTime.fromFormat(dateStr, 'ddMMM').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'ddMMM'));
     case '%d%b%y':
-      return DateTime.fromFormat(dateStr, 'ddMMMyy').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'ddMMMyy'));
     case '%d%b%Y':
-      return DateTime.fromFormat(dateStr, 'ddMMMyyyy').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'ddMMMyyyy'));
     case '%d-%m-%y':
     case '%d/%m/%y':
-      return DateTime.fromFormat(dateStr, 'ddMMyy').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'ddMMyy'));
     case '%d-%m-%Y':
     case '%d/%m/%Y':
-      return DateTime.fromFormat(dateStr, 'ddMMyyyy').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'ddMMyyyy'));
     case '%m-%d':
     case '%m/%d':
-      return DateTime.fromFormat(dateStr, 'MMdd').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'MMdd'));
     case '%m-%d-%y':
     case '%m/%d/%y':
-      return DateTime.fromFormat(dateStr, 'MMddyy').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'MMddyy'));
     case '%m-%d-%Y':
     case '%m/%d/%Y':
-      return DateTime.fromFormat(dateStr, 'MMddyyyy').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'MMddyyyy'));
     case '%j':
       return convertDateToRegularString(
         'JULIAN',
@@ -337,15 +333,15 @@ export function convertDateToRegularString(
       return convertDateToRegularString('THOUSAND', dateStr, daysAheadAllowed);
     case '%y-%m-%d':
     case '%y/%m/%d':
-      return DateTime.fromFormat(dateStr, 'yyMMdd').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'yyMMdd'));
     case '%Y-%m-%d':
     case '%Y/%m/%d':
-      return DateTime.fromFormat(dateStr, 'yyyyMMdd').toFormat('yyyy-MM-dd');
+      return toRegularString(DateTime.fromFormat(dateStr, 'yyyyMMdd'));
     default:
       return dateStr;
   }
 
-  return DateTime.fromObject(dateConfigObj).toLocal().toFormat('yyyy-MM-dd');
+  return toRegularString(DateTime.fromObject(dateConfigObj).toLocal());
 }
 
 export function convertDateToFormatType(
@@ -376,22 +372,27 @@ export function convertDateToFormatType(
   if (dateConvertedToRegular.replace(/\D/g, '').length !== 8 ||
     !(/^\d{8}$/).test(dateConvertedToRegular.replace(/\D/g, ''))) {
     // console.warn(`input '${date}' does not match inputFormat '${inputFormatType}' or any of its shortcuts.`);
-    return 'INVALID DATE';
+    return INVALID_DATE;
   }
 
   const formatter = dateFormatsMap[destinationFormatType.toUpperCase()];
   if (!formatter) {
     // console.warn(`${destinationFormatType} is not a valid date format.`);
-    return 'INVALID DATE';
+    return INVALID_DATE;
   }
 
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateConvertedToRegular)) {
-    return typeof formatter === 'string'
-      ? DateTime.fromISO(dateConvertedToRegular).toFormat(formatter)
-      : formatter(dateConvertedToRegular);
-  } else {
-    return date.toString();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateConvertedToRegular)) {
+    return INVALID_DATE;
   }
+
+  const luxonDate = DateTime.fromISO(dateConvertedToRegular);
+  if (!luxonDate.isValid) {
+    return INVALID_DATE;
+  }
+
+  return typeof formatter === 'string'
+    ? luxonDate.toFormat(formatter)
+    : formatter(luxonDate);
 };
 
 export function detectIfFutureDate(regularDate) {
@@ -544,7 +545,9 @@ export function convertShortcutDate(
             month: parseInt(inputDate.slice(0, 2)),
             day: parseInt(inputDate.slice(2)),
           });
-          return `${year.toString().slice(2)}-${ordinalDate.toFormat('ooo')}`;
+          if (ordinalDate.isValid) {
+            return `${year.toString().slice(2)}-${ordinalDate.toFormat('ooo')}`;
+          }
         }
         throw new Error(`${inputDate} does not match 'JULIAN' format or any of its shortcuts.`);
       } else if (inputDate.length === 5) {
@@ -607,11 +610,14 @@ export function convertShortcutDate(
         const regularDate = `${currentYear}-${inputDate.slice(0, 2)}-${inputDate.slice(2)}`;
         if (detectIfValidPKDate(regularDate)) {
           const year = resolveYearForYearLess(regularDate, daysAheadAllowed);
-          return convertDateToFormatType(
+          const thousandDate = convertDateToFormatType(
             'REGULAR',
             'THOUSAND',
             regularDate.replace(currentYear.toString(), year.toString()),
           );
+          if (thousandDate !== INVALID_DATE) {
+            return thousandDate;
+          }
         }
         throw new Error(`${inputDate} does not match 'THOUSAND' format or any of its shortcuts.`);
       } else if (inputDate.length === 6) {
@@ -664,23 +670,26 @@ export function convertPercentDateFormat(destinationFormat: ReportFormats | 'def
     regularDate = `${regularDate.slice(0, 4)}-${regularDate.slice(4, 6)}-${regularDate.slice(6)}`;
   }
 
-  if (!detectIfValidPKDate(regularDate)) {
+  // fromISO (and so detectIfValidPKDate) also accepts ordinal and week dates such as 4969104.
+  const luxonDate = DateTime.fromFormat(regularDate, 'yyyy-MM-dd');
+  if (!luxonDate.isValid) {
     throw new Error(`${date} does not match ${destinationFormat} format or any of its shortcuts.`);
   }
+  regularDate = luxonDate.toFormat('yyyy-MM-dd');
 
   switch (destinationFormat.replace(/\s/g, '').replace(/\,/g, '')) {
     case '%b%d':
-      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('MMMdd');
+      return luxonDate.toFormat('MMMdd');
     case '%b%d%y':
-      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('MMMdd,yy');
+      return luxonDate.toFormat('MMMdd,yy');
     case '%b%d%Y':
-      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('MMMdd,yyyy');
+      return luxonDate.toFormat('MMMdd,yyyy');
     case '%d%b':
-      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('ddMMM');
+      return luxonDate.toFormat('ddMMM');
     case '%d%b%y':
-      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('ddMMMyy');
+      return luxonDate.toFormat('ddMMMyy');
     case '%d%b%Y':
-      return DateTime.fromFormat(regularDate, 'yyyy-MM-dd').toFormat('ddMMMyyyy');
+      return luxonDate.toFormat('ddMMMyyyy');
     case '%d-%m-%y':
       return convertDateToFormatType('REGULAR', 'EUROPEAN', regularDate).slice(0, 9);
     case '%d/%m/%y':
