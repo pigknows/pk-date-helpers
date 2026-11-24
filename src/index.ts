@@ -7,7 +7,7 @@ import {
   detectIfFutureDate,
   detectIfValidPKDate,
   getConflictingFormatsForType,
-} from './dateHelpers';
+} from './dateHelpers.js';
 
 export {
   convertDateToFormatType,
@@ -20,4 +20,4 @@ export {
   getConflictingFormatsForType,
 }
 
-export type { FormatNames, ReportFormats } from './types';
+export type { FormatNames, ReportFormats } from './types.js';

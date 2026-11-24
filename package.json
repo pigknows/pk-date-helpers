@@ -1,6 +1,6 @@
 {
   "name": "@pigknowsdev/date-helpers",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "author": "PigKnows Dev",
   "type": "module",
   "license": "ISC",
@@ -18,13 +18,15 @@
     "date",
     "conversions"
   ],
-  "main": "dist/index.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/index.js",
+  "types": "dist/cjs/index.d.ts",
   "files": [
     "dist",
     "src"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc && tsc -p tsconfig.cjs.json && echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {

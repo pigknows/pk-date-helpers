@@ -1,9 +1,8 @@
 import { DateTime, DateObjectUnits } from 'luxon';
-import type { FormatNames, ReportFormats } from './types'
+import type { FormatNames, ReportFormats } from './types.js';
 // Apps import these types from 'dist/dateHelpers', where they lived before types.ts.
-export type { FormatNames, ReportFormats } from './types';
+export type { FormatNames, ReportFormats } from './types.js';
 
-const currentYear = new Date().getFullYear();
 const NEWSHAM_DAY_ZERO = '1985-06-05';
 const THOUSAND_DAY_ZERO = '1971-09-27';
 
@@ -406,13 +405,11 @@ export function detectIfFutureDate(regularDate) {
 }
 
 export function detectIfValidPKDate(regularDate) {
-  const year = regularDate.slice(0, 4);
   const month = regularDate.slice(5, 7);
 
-  // F198: allow next calendar year so New Year shortcuts within the ahead window can resolve
-  if (parseInt(year) < 1900 || (parseInt(year) > currentYear + 1)) {
-    return false;
-  }
+  // The year is not limited, as in 1.0.5. Reports format historic and future dates through
+  // convertPercentDateFormat, which throws when this returns false, and batch uploads call this
+  // directly. Whether an event date may be in the future is for the caller to decide.
 
   // check valid month
   if (parseInt(month) < 1 || (parseInt(month) > 12)) {
@@ -423,20 +420,24 @@ export function detectIfValidPKDate(regularDate) {
 }
 
 /**
- * Year for a year-less shortcut assumed as thisYearYmd (yyyy-MM-dd).
- * No daysAheadAllowed → same as detectIfFutureDate (this or last year).
- * With N → this / last / next year using today..today+N (F198).
+ * Which occurrence a shortcut with no year (or no cycle) means, given its date in the current
+ * year or cycle (yyyy-MM-dd): 0 is that date, -1 the occurrence before it, 1 the one after it.
+ * No daysAheadAllowed → that date, or the one before it when it is more than a day ahead.
+ * With N → dates up to N days ahead stay; later ones fall back; a date already past moves
+ * forward when its next occurrence is inside the window (New Year, or the start of a cycle) (F198).
  */
-function resolveYearForYearLess(thisYearYmd: string, daysAheadAllowed?: number): number {
-  const year = parseInt(thisYearYmd.slice(0, 4), 10);
-
+function resolveShortcutOffset(
+  thisYmd: string,
+  daysAheadAllowed: number | undefined,
+  toNextOccurrence: (date: DateTime) => DateTime,
+): -1 | 0 | 1 {
   if (daysAheadAllowed === undefined || daysAheadAllowed === null) {
-    return detectIfFutureDate(thisYearYmd) ? year - 1 : year;
+    return detectIfFutureDate(thisYmd) ? -1 : 0;
   }
 
-  const candidateThis = DateTime.fromISO(thisYearYmd).startOf('day');
+  const candidateThis = DateTime.fromISO(thisYmd).startOf('day');
   if (!candidateThis.isValid) {
-    return year;
+    return 0;
   }
 
   const now = DateTime.local().startOf('day');
@@ -444,17 +445,37 @@ function resolveYearForYearLess(thisYearYmd: string, daysAheadAllowed?: number):
   const maxAllowed = now.plus({ days: Number.isFinite(n) ? Math.max(0, n) : 1 });
 
   if (candidateThis > maxAllowed) {
-    return year - 1;
+    return -1;
   }
 
-  if (candidateThis < now) {
-    const candidateNext = candidateThis.plus({ years: 1 });
-    if (candidateNext <= maxAllowed) {
-      return year + 1;
-    }
+  if (candidateThis < now && toNextOccurrence(candidateThis) <= maxAllowed) {
+    return 1;
   }
 
-  return year;
+  return 0;
+}
+
+// Year for a year-less shortcut assumed as thisYearYmd (yyyy-MM-dd): this, last or next year.
+function resolveYearForYearLess(thisYearYmd: string, daysAheadAllowed?: number): number {
+  const year = parseInt(thisYearYmd.slice(0, 4), 10);
+  return year + resolveShortcutOffset(thisYearYmd, daysAheadAllowed, (date) => date.plus({ years: 1 }));
+}
+
+// Thousand and Newsham count days in 1000-day cycles, so a 3-digit shortcut picks a cycle, not a
+// year. A cycle runs across calendar years, so the year of the date says nothing about the cycle.
+function resolveCycleForDayOnly(
+  formatType: 'NEWSHAM' | 'THOUSAND',
+  currentCycle: string,
+  day: string,
+  daysAheadAllowed?: number,
+): string {
+  const thisCycle = `${currentCycle}${day}`;
+  const offset = resolveShortcutOffset(
+    convertDateToFormatType(formatType, 'REGULAR', thisCycle),
+    daysAheadAllowed,
+    (date) => date.plus({ days: 1000 }),
+  );
+  return offset === 0 ? thisCycle : `${parseInt(currentCycle) + offset}${day}`;
 }
 
 // shortcut used must belong to the destination formatType.
@@ -563,16 +584,7 @@ export function convertShortcutDate(
       const todayNewsham = convertDateToFormatType('REGULAR', 'NEWSHAM', DateTime.local().toFormat('yyyy-MM-dd'));
       const currentNewshamCycle = todayNewsham.slice(0, 2);
       if (inputDate.length < 4) {
-        const paddedDate = `${currentNewshamCycle}${padNum(inputDate, 3)}`;
-        const regularizedDate = convertDateToFormatType('NEWSHAM', 'REGULAR', paddedDate);
-        const year = resolveYearForYearLess(regularizedDate, daysAheadAllowed);
-        if (year < currentYear) {
-          return `${parseInt(currentNewshamCycle) - 1}${padNum(inputDate, 3)}`;
-        }
-        if (year > currentYear) {
-          return `${parseInt(currentNewshamCycle) + 1}${padNum(inputDate, 3)}`;
-        }
-        return paddedDate;
+        return resolveCycleForDayOnly('NEWSHAM', currentNewshamCycle, padNum(inputDate, 3), daysAheadAllowed);
       } else if (inputDate.length === 4) {
         return `1${inputDate}`;
       } else if (inputDate.length === 6) {
@@ -590,16 +602,7 @@ export function convertShortcutDate(
       const todayThousand = convertDateToFormatType('REGULAR', 'THOUSAND', DateTime.local().toFormat('yyyy-MM-dd'));
       const currentCycle = todayThousand.slice(0, 2);
       if (inputDate.length < 4) {
-        const paddedDate = `${currentCycle}${padNum(inputDate, 3)}`;
-        const regularizedDate = convertDateToFormatType('THOUSAND', 'REGULAR', paddedDate);
-        const year = resolveYearForYearLess(regularizedDate, daysAheadAllowed);
-        if (year < currentYear) {
-          return `${parseInt(currentCycle) - 1}${padNum(inputDate, 3)}`;
-        }
-        if (year > currentYear) {
-          return `${parseInt(currentCycle) + 1}${padNum(inputDate, 3)}`;
-        }
-        return paddedDate;
+        return resolveCycleForDayOnly('THOUSAND', currentCycle, padNum(inputDate, 3), daysAheadAllowed);
       } else if (inputDate.length === 4) {
         const regularDate = `${currentYear}-${inputDate.slice(0, 2)}-${inputDate.slice(2)}`;
         if (detectIfValidPKDate(regularDate)) {

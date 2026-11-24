@@ -40,12 +40,14 @@ describe('Detecting valid dates', () => {
     expect(detectIfValidPKDate(regularValid)).toEqual(true);
   });
 
-  // F198: next calendar year must stay valid so New Year shortcuts can resolve ahead
+  // The year is not limited: reports format future and historic dates through this check.
   test('next calendar year returns true', () => {
     expect(detectIfValidPKDate(`${currentYear + 1}-01-02`)).toEqual(true);
   });
 
-  test('two years ahead returns false', () => {
-    expect(detectIfValidPKDate(`${currentYear + 2}-01-02`)).toEqual(false);
+  test('far future and pre-1900 years return true', () => {
+    expect(detectIfValidPKDate(`${currentYear + 2}-01-02`)).toEqual(true);
+    expect(detectIfValidPKDate('2062-05-05')).toEqual(true);
+    expect(detectIfValidPKDate('1899-12-31')).toEqual(true);
   });
 });

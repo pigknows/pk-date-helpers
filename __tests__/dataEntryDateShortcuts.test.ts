@@ -1,4 +1,4 @@
-import { convertShortcutDate } from '../src/dateHelpers';
+import { convertDateToFormatType, convertShortcutDate, detectIfFutureDate } from '../src/dateHelpers';
 import {
   american1,
   american2,
@@ -297,25 +297,46 @@ describe('F198 daysAheadAllowed window:', () => {
   const americanPlus2 = plus2.toFormat('MM/dd');
   const americanPlus10 = plus10.toFormat('MM/dd');
 
-  test('without window, a date more than one day ahead uses last year', () => {
+  // Years come from the target date, not from today, so these hold in the last days of December too.
+  test('without window, a date more than one day ahead uses the year before', () => {
     const result = convertShortcutDate('AMERICAN', americanPlus2);
-    expect(result.endsWith(String(currentYear - 1))).toEqual(true);
+    expect(result.endsWith(String(plus2.year - 1))).toEqual(true);
   });
 
-  test('with window covering +2 days, that shortcut stays this year', () => {
+  test('with window covering +2 days, that shortcut is not moved back a year', () => {
     const result = convertShortcutDate('AMERICAN', americanPlus2, 5);
-    expect(result).toEqual(`${plus2.toFormat('MM-dd')}-${currentYear}`);
+    expect(result).toEqual(`${plus2.toFormat('MM-dd')}-${plus2.year}`);
   });
 
-  test('with window 5, a date 10 days ahead still uses last year', () => {
+  test('with window 5, a date 10 days ahead still uses the year before', () => {
     const result = convertShortcutDate('AMERICAN', americanPlus10, 5);
-    expect(result.endsWith(String(currentYear - 1))).toEqual(true);
+    expect(result.endsWith(String(plus10.year - 1))).toEqual(true);
   });
 
   test('REGULAR shortcut with window matches AMERICAN year choice', () => {
     const mmdd = plus2.toFormat('MMdd');
     expect(convertShortcutDate('REGULAR', mmdd, 5)).toEqual(
-      `${currentYear}-${plus2.toFormat('MM-dd')}`,
+      `${plus2.year}-${plus2.toFormat('MM-dd')}`,
     );
+  });
+
+  // Thousand and Newsham shortcuts pick a 1000-day cycle, which runs across calendar years.
+  (['THOUSAND', 'NEWSHAM'] as const).forEach((format) => {
+    test(`${format} 3-digit shortcut without window is the latest cycle that is not ahead`, () => {
+      ['000', '185', '500', '999'].forEach((day) => {
+        const full = convertShortcutDate(format, day);
+        const nextCycle = `${parseInt(full.slice(0, 2)) + 1}${day}`;
+        expect(full.slice(2)).toEqual(day);
+        expect(detectIfFutureDate(convertDateToFormatType(format, 'REGULAR', full))).toEqual(false);
+        expect(detectIfFutureDate(convertDateToFormatType(format, 'REGULAR', nextCycle))).toEqual(true);
+      });
+    });
+
+    test(`${format} 3-digit shortcut inside the window keeps its own cycle, outside it falls back one`, () => {
+      const near = convertDateToFormatType('REGULAR', format, plus2.toFormat('yyyy-MM-dd'));
+      expect(convertShortcutDate(format, near.slice(2), 5)).toEqual(near);
+      const far = convertDateToFormatType('REGULAR', format, plus10.toFormat('yyyy-MM-dd'));
+      expect(convertShortcutDate(format, far.slice(2), 5)).toEqual(`${parseInt(far.slice(0, 2)) - 1}${far.slice(2)}`);
+    });
   });
 });
