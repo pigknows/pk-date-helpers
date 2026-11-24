@@ -38,11 +38,11 @@ describe('Report Format from Regular conversions', () => {
   });
 
   test('%d-%m-%y format', () => {
-    expect(convertPercentDateFormat('%d-%m-%y', regular1)).toEqual(european1.slice(0, 9));
+    expect(convertPercentDateFormat('%d-%m-%y', regular1)).toEqual(`31-12-${currentYearShort}`);
   });
 
   test('%d/%m/%y format', () => {
-    expect(convertPercentDateFormat('%d/%m/%y', regular1)).toEqual(european1.slice(0, 9).replace(/\-/g, '/'));
+    expect(convertPercentDateFormat('%d/%m/%y', regular1)).toEqual(`31/12/${currentYearShort}`);
   });
 
   test('%d-%m-%Y format', () => {
@@ -58,7 +58,7 @@ describe('Report Format from Regular conversions', () => {
   });
 
   test('%m-%d-%y', () => {
-    expect(convertPercentDateFormat('%m-%d-%y', regular1)).toEqual(american1.slice(0, 9));
+    expect(convertPercentDateFormat('%m-%d-%y', regular1)).toEqual(`12-31-${currentYearShort}`);
   });
 
   test('%m-%d-%Y', () => {
@@ -70,7 +70,7 @@ describe('Report Format from Regular conversions', () => {
   });
 
   test('%m/%d/%y', () => {
-    expect(convertPercentDateFormat('%m/%d/%y', regular1)).toEqual(american1.slice(0, 9).replace(/\-/g, '/'));
+    expect(convertPercentDateFormat('%m/%d/%y', regular1)).toEqual(`12/31/${currentYearShort}`);
   });
 
   test('%m/%d/%Y', () => {
