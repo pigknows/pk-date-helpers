@@ -6,11 +6,13 @@ Supports conversions from all of PigKnows date formats from any format into any 
 
     yarn add @pigknowsdev/date-helpers
 
+The package ships a CommonJS build for Node (`require`) and an ES module build for bundlers.
+
 The source lives at https://github.com/pigknows/pk-date-helpers. The package on npm is `@pigknowsdev/date-helpers`; the older unscoped `pk-date-helpers` package is no longer updated.
 
 ## Releasing
 
-GitHub Actions publishes to npm when a version tag is pushed (`.github/workflows/publish.yml`). It builds `dist/` from `src/`, so a release never ships a stale build.
+GitHub Actions publishes to npm when a version tag is pushed (`.github/workflows/publish.yml`). It builds `dist/` from `src/`; `dist/` is not committed.
 
 1. Merge the change into `main`.
 2. On an up-to-date `main`, run `npm version <new version>`, for example `npm version 2.2.0`. This updates `package.json`, commits, and creates the tag `v2.2.0`.
