@@ -394,13 +394,17 @@ export function convertDateToFormatType(
   }
 };
 
+// Anything that is not a complete, real yyyy-MM-dd date reports true, so a caller that refuses
+// future dates also refuses input it cannot read (Luxon reads 2027-12 as 2027-12-01).
 export function detectIfFutureDate(regularDate) {
+  if (typeof regularDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(regularDate)) {
+    return true;
+  }
+  const comparedDateTime = DateTime.fromFormat(regularDate, 'yyyy-MM-dd');
+  if (!comparedDateTime.isValid) {
+    return true;
+  }
   const currentDateTime = DateTime.local().plus({ days: 1 });
-  const comparedDateTime = DateTime.fromObject({
-    day: parseInt(regularDate.slice(8, 10)),
-    month: parseInt(regularDate.slice(5, 7)),
-    year: parseInt(regularDate.slice(0, 4)),
-  });
   return currentDateTime < comparedDateTime;
 }
 
@@ -431,13 +435,13 @@ function resolveShortcutOffset(
   daysAheadAllowed: number | undefined,
   toNextOccurrence: (date: DateTime) => DateTime,
 ): -1 | 0 | 1 {
-  if (daysAheadAllowed === undefined || daysAheadAllowed === null) {
-    return detectIfFutureDate(thisYmd) ? -1 : 0;
-  }
-
   const candidateThis = DateTime.fromISO(thisYmd).startOf('day');
   if (!candidateThis.isValid) {
     return 0;
+  }
+
+  if (daysAheadAllowed === undefined || daysAheadAllowed === null) {
+    return detectIfFutureDate(thisYmd) ? -1 : 0;
   }
 
   const now = DateTime.local().startOf('day');
