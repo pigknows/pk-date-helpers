@@ -24,6 +24,21 @@ function padNum(input: number | string, places = 2) {
   return temp;
 }
 
+// Digits of a shortcut. Separators may surround them ("1-2", "12/31"), but a letter or any other
+// character means the input is not a date: stripping it and padding what is left (possibly
+// nothing) would turn a placeholder such as "n/a" into a real day.
+function isShortcutText(text: string): boolean {
+  return /^[0-9\p{P}\p{S}\s]*$/u.test(text) && /[0-9]/.test(text);
+}
+
+function shortcutDigits(date: string, formatType: string): string {
+  const text = date.toString();
+  if (!isShortcutText(text)) {
+    throw new Error(`${text} does not match '${formatType.toUpperCase()}' format or any of its shortcuts.`);
+  }
+  return text.replace(/\D/g, '');
+}
+
 // dateFormatsMap requires Regular-like input
 // convert to regular first using helper function below
 const dateFormatsMap = {
@@ -138,7 +153,7 @@ export function detectFormatType(date: string, preferStandard = true, ignoreForm
     }
   }
 
-  if (preferStandard) { // still no match? check other supported shortcuts
+  if (preferStandard && isShortcutText(date.toString())) { // still no match? check other supported shortcuts
     // order preference: THOUSAND, JULIAN, NEWSHAM
     if (standardizedDate.length <= 3) {
       if (!ignoreFormats.includes('THOUSAND')) {
@@ -217,13 +232,13 @@ export function convertDateToRegularString(
   if (!date) {
     return '';
   }
-  let dateStr = date.toString().replace(/[^a-zA-Z0-9]/g, '');
+  let dateStr = date.toString().replace(/[\p{P}\p{S}\s]/gu, '');
   const dateConfigObj: DateObjectUnits = {};
   switch (inputFormat) {
     case 'AMERICAN':
     case 'American':
     case 'american':
-      if (dateStr.length !== 8) {
+      if (!/^\d{8}$/.test(dateStr)) {
         dateStr = convertShortcutDate('AMERICAN', dateStr, daysAheadAllowed).replace(/\D/g, '');
       } else if (date.length === 10 && (date[4] === '-')) {
         // regular format was entered. convert.
@@ -239,7 +254,7 @@ export function convertDateToRegularString(
     case 'EUROPEAN':
     case 'European':
     case 'european':
-      if (dateStr.length !== 8) {
+      if (!/^\d{8}$/.test(dateStr)) {
         dateStr = convertShortcutDate('European', dateStr, daysAheadAllowed).replace(/\D/g, '');
       } else if (date.length === 10 && (date[4] === '-')) {
         // regular format was entered. convert.
@@ -257,7 +272,7 @@ export function convertDateToRegularString(
     case 'REGULAR':
     case 'Regular':
     case 'regular':
-      if (dateStr.length !== 8) {
+      if (!/^\d{8}$/.test(dateStr)) {
         dateStr = convertShortcutDate('REGULAR', dateStr, daysAheadAllowed).replace(/\D/g, '');
       }
       dateConfigObj.year = parseInt(dateStr.slice(0, 4));
@@ -268,7 +283,7 @@ export function convertDateToRegularString(
     case 'JULIAN':
     case 'Julian':
     case 'julian':
-      if (dateStr.length !== 5) {
+      if (!/^\d{5}$/.test(dateStr)) {
         dateStr = convertShortcutDate('JULIAN', dateStr, daysAheadAllowed).replace(/\D/g, '');
       }
       dateConfigObj.year = parseInt(`20${dateStr.slice(0, 2)}`);
@@ -280,7 +295,7 @@ export function convertDateToRegularString(
     case 'THOUSAND':
     case 'Thousand':
     case 'thousand':
-      if (dateStr.length !== 5) {
+      if (!/^\d{5}$/.test(dateStr)) {
         dateStr = convertShortcutDate(inputFormat, dateStr, daysAheadAllowed).replace(/\D/g, '');
       }
       const cycles = parseInt(dateStr.slice(0, 2));
@@ -485,7 +500,7 @@ export function convertShortcutDate(
   date: string,
   daysAheadAllowed?: number,
 ) {
-  const inputDate = date.toString().replace(/\D/g, '');
+  const inputDate = shortcutDigits(date, formatType);
   const currentYear = (new Date()).getFullYear();
   const currentYearEnd = currentYear.toString().slice(2);
 
