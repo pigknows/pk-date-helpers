@@ -394,14 +394,16 @@ export function convertDateToFormatType(
   }
 };
 
-export function detectIfFutureDate(regularDate) {
-  const currentDateTime = DateTime.local().plus({ days: 1 });
-  const comparedDateTime = DateTime.fromObject({
-    day: parseInt(regularDate.slice(8, 10)),
-    month: parseInt(regularDate.slice(5, 7)),
-    year: parseInt(regularDate.slice(0, 4)),
-  });
-  return currentDateTime < comparedDateTime;
+// Compares local calendar days: tomorrow is a future date. Throws on input it cannot read, so an
+// unreadable date is never reported as "not in the future".
+export function detectIfFutureDate(regularDate: string): boolean {
+  const candidate = typeof regularDate === 'string'
+    ? DateTime.fromISO(regularDate).startOf('day')
+    : DateTime.invalid('not a string');
+  if (!candidate.isValid) {
+    throw new Error(`${regularDate} is not a valid yyyy-MM-dd date.`);
+  }
+  return candidate > DateTime.local().startOf('day');
 }
 
 export function detectIfValidPKDate(regularDate) {
@@ -431,16 +433,16 @@ function resolveShortcutOffset(
   daysAheadAllowed: number | undefined,
   toNextOccurrence: (date: DateTime) => DateTime,
 ): -1 | 0 | 1 {
-  if (daysAheadAllowed === undefined || daysAheadAllowed === null) {
-    return detectIfFutureDate(thisYmd) ? -1 : 0;
-  }
-
   const candidateThis = DateTime.fromISO(thisYmd).startOf('day');
   if (!candidateThis.isValid) {
     return 0;
   }
 
   const now = DateTime.local().startOf('day');
+  if (daysAheadAllowed === undefined || daysAheadAllowed === null) {
+    return candidateThis > now.plus({ days: 1 }) ? -1 : 0;
+  }
+
   const n = Number(daysAheadAllowed);
   const maxAllowed = now.plus({ days: Number.isFinite(n) ? Math.max(0, n) : 1 });
 

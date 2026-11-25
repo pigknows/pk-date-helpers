@@ -138,7 +138,7 @@ Detects the format of a string, if it matches a known date format. Optional para
 Note that shortcuts *are not* supported for detection. You must use the full version of any format for accurate detection.
 
 ### detectIfFutureDate
-This returns true / false for if the date is in the future.
+This returns true / false for if the date is in the future. It compares local calendar days, so tomorrow returns true and today returns false. It throws if the date cannot be read as `yyyy-MM-dd`.
 
 ### detectValidPKDate
 This returns true / false for if the date is valid according to PigKnows rules. For example, any years prior to 1900, Feb 31, a month '14', etc.
