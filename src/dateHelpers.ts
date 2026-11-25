@@ -24,6 +24,12 @@ function padNum(input: number | string, places = 2) {
   return temp;
 }
 
+// Numeric formats tolerate any ASCII punctuation or space as a separator, but they need a digit
+// and never contain a letter: 'n/a', 'abc', '12a' or a lone '?' is not a date or a shortcut.
+function isNumericDateText(date: string): boolean {
+  return /\d/.test(date) && /^[\d\s!-\/:-@\[-`{-~]+$/.test(date);
+}
+
 // dateFormatsMap requires Regular-like input
 // convert to regular first using helper function below
 const dateFormatsMap = {
@@ -119,6 +125,12 @@ export function detectFormatType(date: string, preferStandard = true, ignoreForm
     if (!ignoreFormats.includes(format)) formatMap[format] = fullFormatMap[format];
   });
 
+  // Standard formats are numeric; extra formats add only English month names. Anything else would
+  // be dropped by the standardization below and the remaining digits misread as a date.
+  const isAllowedText = preferStandard ? isNumericDateText(date.toString()) : /^[\s!-~]+$/.test(date.toString());
+  if (!isAllowedText) {
+    return '';
+  }
 
   const standardizedDate = date.toString().replace(/\//g, '-').split('-').map(x => x.replace(/[^a-zA-z0-9]/g, '')).join('-');
   if (standardizedDate.replace(/\D/g, '').length === 6) { // 2 digits for month, day, year
@@ -140,7 +152,7 @@ export function detectFormatType(date: string, preferStandard = true, ignoreForm
 
   if (preferStandard) { // still no match? check other supported shortcuts
     // order preference: THOUSAND, JULIAN, NEWSHAM
-    if (standardizedDate.length <= 3) {
+    if (/^\d{1,3}$/.test(standardizedDate)) {
       if (!ignoreFormats.includes('THOUSAND')) {
         return 'THOUSAND';
       } else if (!ignoreFormats.includes('JULIAN')) {
@@ -148,7 +160,7 @@ export function detectFormatType(date: string, preferStandard = true, ignoreForm
       } else if (!ignoreFormats.includes('NEWSHAM')) {
         return 'NEWSHAM';
       }
-    } else if (standardizedDate.replace(/\D/g, '').length === 5) {
+    } else if (/^[\d-]+$/.test(standardizedDate) && standardizedDate.replace(/\D/g, '').length === 5) {
       if (!ignoreFormats.includes('THOUSAND')) {
         return 'THOUSAND';
       } else if (!ignoreFormats.includes('JULIAN')) {
@@ -216,6 +228,9 @@ export function convertDateToRegularString(
 
   if (!date) {
     return '';
+  }
+  if (!inputFormat.includes('%b') && !isNumericDateText(date.toString())) {
+    throw new Error(`${date} does not match '${inputFormat}' format or any of its shortcuts.`);
   }
   let dateStr = date.toString().replace(/[^a-zA-Z0-9]/g, '');
   const dateConfigObj: DateObjectUnits = {};
@@ -485,6 +500,9 @@ export function convertShortcutDate(
   date: string,
   daysAheadAllowed?: number,
 ) {
+  if (!isNumericDateText(date.toString())) {
+    throw new Error(`${date} does not match '${formatType.toUpperCase()}' format or any of its shortcuts.`);
+  }
   const inputDate = date.toString().replace(/\D/g, '');
   const currentYear = (new Date()).getFullYear();
   const currentYearEnd = currentYear.toString().slice(2);
@@ -640,7 +658,7 @@ export function convertPercentDateFormat(destinationFormat: ReportFormats | 'def
   // }
 
   let regularDate = date;
-  if (regularDate.length !== 10) {
+  if (regularDate.length !== 10 && isNumericDateText(regularDate)) {
     // check for shortcut
     switch (regularDate.length) {
       case 1:
