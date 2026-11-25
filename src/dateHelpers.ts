@@ -24,6 +24,32 @@ function padNum(input: number | string, places = 2) {
   return temp;
 }
 
+// Cycle codes count calendar days. Both midnights are taken in UTC so the count does not depend
+// on the host zone: local midnights on either side of an offset change are not a whole number
+// of 24-hour days apart, and rounding that down would store the previous day.
+function utcDateFromDigits(digits: string) {
+  return DateTime.fromObject({
+    day: parseInt(digits.slice(6, 8)),
+    month: parseInt(digits.slice(4, 6)),
+    year: parseInt(digits.slice(0, 4)),
+  }, { zone: 'utc' });
+}
+
+function toCycleCode(date: string, dayZeroIso: string): string {
+  const luxonDate = utcDateFromDigits(date.toString().replace(/\D/g, ''));
+  const luxonZeroDay = utcDateFromDigits(dayZeroIso.replace(/\D/g, ''));
+
+  const diffInDays = Math.abs(Math.round(luxonZeroDay.diff(luxonDate, 'days').as('days')));
+  const thousands = Math.floor(diffInDays / 1000);
+  const dayInYear = diffInDays - (thousands * 1000);
+
+  return `${padNum(thousands)}${padNum(dayInYear, 3)}`;
+}
+
+function fromCycleDays(dayZeroIso: string, days: number): string {
+  return DateTime.fromISO(dayZeroIso, { zone: 'utc' }).plus({ days }).toFormat('yyyy-MM-dd');
+}
+
 // dateFormatsMap requires Regular-like input
 // convert to regular first using helper function below
 const dateFormatsMap = {
@@ -31,47 +57,9 @@ const dateFormatsMap = {
   EUROPEAN: 'dd-MM-yyyy',
   ISO: 'yyyy-MM-dd',
   JULIAN: 'yy-ooo',
-  NEWSHAM: (date: string): string => {
-    const temp = date.toString().replace(/\D/g, '');
-    const luxonDate = DateTime.fromObject({
-      day: parseInt(temp.slice(6, 8)),
-      month: parseInt(temp.slice(4, 6)),
-      year: parseInt(temp.slice(0, 4)),
-    });
-    const dayZero = NEWSHAM_DAY_ZERO.toString().replace(/\D/g, '');
-    const luxonZeroDay = DateTime.fromObject({
-      day: parseInt(dayZero.slice(6, 8)),
-      month: parseInt(dayZero.slice(4, 6)),
-      year: parseInt(dayZero.slice(0, 4)),
-    });
-
-    const diffInDays = Math.abs(luxonZeroDay.diff(luxonDate, 'days').as('days'));
-    const thousands = Math.floor(diffInDays / 1000);
-    const dayInYear = Math.floor(diffInDays - (thousands * 1000));
-
-    return `${padNum(thousands)}${padNum(dayInYear, 3)}`;
-  },
+  NEWSHAM: (date: string): string => toCycleCode(date, NEWSHAM_DAY_ZERO),
   REGULAR: 'yyyy-MM-dd',
-  THOUSAND: (date: string): string => {
-    const temp = date.toString().replace(/\D/g, '');
-    const luxonDate = DateTime.fromObject({
-      day: parseInt(temp.slice(6, 8)),
-      month: parseInt(temp.slice(4, 6)),
-      year: parseInt(temp.slice(0, 4)),
-    });
-    const dayZero = THOUSAND_DAY_ZERO.toString().replace(/\D/g, '');
-    const luxonZeroDay = DateTime.fromObject({
-      day: parseInt(dayZero.slice(6)),
-      month: parseInt(dayZero.slice(4, 6)),
-      year: parseInt(dayZero.slice(0, 4)),
-    });
-
-    const diffInDays = Math.abs(luxonZeroDay.diff(luxonDate, 'days').as('days'));
-    const thousands = Math.floor(diffInDays / 1000);
-    const dayInYear = Math.floor(diffInDays - (thousands * 1000));
-
-    return `${padNum(thousands)}${padNum(dayInYear, 3)}`;
-  },
+  THOUSAND: (date: string): string => toCycleCode(date, THOUSAND_DAY_ZERO),
 };
 
 export function detectFormatType(date: string, preferStandard = true, ignoreFormats: string[] = []) {
@@ -288,7 +276,7 @@ export function convertDateToRegularString(
       const dayZero = inputFormat.toUpperCase() === 'NEWSHAM'
         ? NEWSHAM_DAY_ZERO
         : THOUSAND_DAY_ZERO;
-      return DateTime.fromISO(dayZero).plus({ days: (cycles * 1000) + leftover }).toFormat('yyyy-MM-dd');
+      return fromCycleDays(dayZero, (cycles * 1000) + leftover);
     case '%b%d':
       return DateTime.fromFormat(dateStr, 'MMMdd').toFormat('yyyy-MM-dd');
     case '%b%d%y':
