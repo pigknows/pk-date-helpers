@@ -24,6 +24,20 @@ function padNum(input: number | string, places = 2) {
   return temp;
 }
 
+// Whitespace, punctuation and symbols are separators. Letters, marks and non-ASCII digits are kept,
+// so a numeric code holding one fails digitsOnly instead of being half-read by parseInt.
+function stripSeparators(date: string): string {
+  return date.toString().replace(/[^\p{L}\p{M}\p{N}]/gu, '');
+}
+
+function digitsOnly(date: string, formatType: string): string {
+  const stripped = stripSeparators(date);
+  if (!/^\d*$/.test(stripped)) {
+    throw new Error(`${date} does not match '${formatType.toUpperCase()}' format or any of its shortcuts.`);
+  }
+  return stripped;
+}
+
 // dateFormatsMap requires Regular-like input
 // convert to regular first using helper function below
 const dateFormatsMap = {
@@ -217,15 +231,16 @@ export function convertDateToRegularString(
   if (!date) {
     return '';
   }
-  let dateStr = date.toString().replace(/[^a-zA-Z0-9]/g, '');
+  let dateStr = stripSeparators(date);
   const dateConfigObj: DateObjectUnits = {};
   switch (inputFormat) {
     case 'AMERICAN':
     case 'American':
     case 'american':
+      dateStr = digitsOnly(date, inputFormat);
       if (dateStr.length !== 8) {
         dateStr = convertShortcutDate('AMERICAN', dateStr, daysAheadAllowed).replace(/\D/g, '');
-      } else if (date.length === 10 && (date[4] === '-')) {
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         // regular format was entered. convert.
         dateConfigObj.month = parseInt(date.slice(5, 7));
         dateConfigObj.day = parseInt(date.slice(8, 10));
@@ -239,9 +254,10 @@ export function convertDateToRegularString(
     case 'EUROPEAN':
     case 'European':
     case 'european':
+      dateStr = digitsOnly(date, inputFormat);
       if (dateStr.length !== 8) {
         dateStr = convertShortcutDate('European', dateStr, daysAheadAllowed).replace(/\D/g, '');
-      } else if (date.length === 10 && (date[4] === '-')) {
+      } else if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
         // regular format was entered. convert.
         dateConfigObj.month = parseInt(date.slice(5, 7));
         dateConfigObj.day = parseInt(date.slice(8, 10));
@@ -257,6 +273,7 @@ export function convertDateToRegularString(
     case 'REGULAR':
     case 'Regular':
     case 'regular':
+      dateStr = digitsOnly(date, inputFormat);
       if (dateStr.length !== 8) {
         dateStr = convertShortcutDate('REGULAR', dateStr, daysAheadAllowed).replace(/\D/g, '');
       }
@@ -268,6 +285,7 @@ export function convertDateToRegularString(
     case 'JULIAN':
     case 'Julian':
     case 'julian':
+      dateStr = digitsOnly(date, inputFormat);
       if (dateStr.length !== 5) {
         dateStr = convertShortcutDate('JULIAN', dateStr, daysAheadAllowed).replace(/\D/g, '');
       }
@@ -280,6 +298,7 @@ export function convertDateToRegularString(
     case 'THOUSAND':
     case 'Thousand':
     case 'thousand':
+      dateStr = digitsOnly(date, inputFormat);
       if (dateStr.length !== 5) {
         dateStr = convertShortcutDate(inputFormat, dateStr, daysAheadAllowed).replace(/\D/g, '');
       }
@@ -485,7 +504,7 @@ export function convertShortcutDate(
   date: string,
   daysAheadAllowed?: number,
 ) {
-  const inputDate = date.toString().replace(/\D/g, '');
+  const inputDate = digitsOnly(date, formatType);
   const currentYear = (new Date()).getFullYear();
   const currentYearEnd = currentYear.toString().slice(2);
 
