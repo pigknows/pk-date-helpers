@@ -197,12 +197,12 @@ export function getConflictingFormatsForType(formatType: FormatNames | ReportFor
     '%Y-%m-%d': [],
   };
 
-  if (conflictsMap[formatType]) {
-    return conflictsMap[formatType];
+  if (!Object.prototype.hasOwnProperty.call(conflictsMap, formatType)) {
+    // console.error(`Unknown format type: ${formatType}`);
+    return [];
   }
 
-  // console.error(`Unknown format type: ${formatType}`);
-  return [];
+  return conflictsMap[formatType].slice();
 }
 
 export function convertDateToRegularString(
@@ -379,7 +379,10 @@ export function convertDateToFormatType(
     return 'INVALID DATE';
   }
 
-  const formatter = dateFormatsMap[destinationFormatType.toUpperCase()];
+  const formatKey = destinationFormatType.toUpperCase();
+  const formatter = Object.prototype.hasOwnProperty.call(dateFormatsMap, formatKey)
+    ? dateFormatsMap[formatKey]
+    : undefined;
   if (!formatter) {
     // console.warn(`${destinationFormatType} is not a valid date format.`);
     return 'INVALID DATE';
