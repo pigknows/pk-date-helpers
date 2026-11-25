@@ -140,7 +140,7 @@ export function detectFormatType(date: string, preferStandard = true, ignoreForm
 
   if (preferStandard) { // still no match? check other supported shortcuts
     // order preference: THOUSAND, JULIAN, NEWSHAM
-    if (standardizedDate.length <= 3) {
+    if (/^\d{1,3}$/.test(standardizedDate)) {
       if (!ignoreFormats.includes('THOUSAND')) {
         return 'THOUSAND';
       } else if (!ignoreFormats.includes('JULIAN')) {
@@ -148,7 +148,7 @@ export function detectFormatType(date: string, preferStandard = true, ignoreForm
       } else if (!ignoreFormats.includes('NEWSHAM')) {
         return 'NEWSHAM';
       }
-    } else if (standardizedDate.replace(/\D/g, '').length === 5) {
+    } else if (/^\d{5}$/.test(standardizedDate)) {
       if (!ignoreFormats.includes('THOUSAND')) {
         return 'THOUSAND';
       } else if (!ignoreFormats.includes('JULIAN')) {
@@ -639,33 +639,42 @@ export function convertPercentDateFormat(destinationFormat: ReportFormats | 'def
   //   console.error(`${destinationFormat} does not match percentage format type.`);
   // }
 
+  const invalidDateError = new Error(`${date} does not match ${destinationFormat} format or any of its shortcuts.`);
+  if (typeof date !== 'string') {
+    throw invalidDateError;
+  }
+
+  // Shortcuts are digits only: the shortcut converters strip separators and re-split the
+  // remaining digits, so a punctuated date (01/02/26) would be read as a different date.
   let regularDate = date;
-  if (regularDate.length !== 10) {
-    // check for shortcut
-    switch (regularDate.length) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    if (!/^\d+$/.test(date)) {
+      throw invalidDateError;
+    }
+    switch (date.length) {
       case 1:
       case 2:
       case 3:
       case 5: {
-        regularDate = convertDateToFormatType('THOUSAND', 'REGULAR', regularDate);
+        regularDate = convertDateToFormatType('THOUSAND', 'REGULAR', date);
         break;
       }
       case 4:
       case 6:
       case 8: {
-        regularDate = convertShortcutDate('REGULAR', regularDate);
+        regularDate = convertShortcutDate('REGULAR', date);
         break;
       }
       default:
-        break;
+        throw invalidDateError;
     }
   }
-  if (regularDate.length === 8) {
+  if (/^\d{8}$/.test(regularDate)) {
     regularDate = `${regularDate.slice(0, 4)}-${regularDate.slice(4, 6)}-${regularDate.slice(6)}`;
   }
 
-  if (!detectIfValidPKDate(regularDate)) {
-    throw new Error(`${date} does not match ${destinationFormat} format or any of its shortcuts.`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(regularDate) || !detectIfValidPKDate(regularDate)) {
+    throw invalidDateError;
   }
 
   switch (destinationFormat.replace(/\s/g, '').replace(/\,/g, '')) {
