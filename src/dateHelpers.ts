@@ -5,6 +5,18 @@ export type { FormatNames, ReportFormats } from './types.js';
 
 const NEWSHAM_DAY_ZERO = '1985-06-05';
 const THOUSAND_DAY_ZERO = '1971-09-27';
+const REGULAR_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+// Input formats that are read as digits only; a letter in the input is never a valid entry.
+const NUMERIC_INPUT_FORMATS = new Set<string>([
+  'AMERICAN', 'American', 'american',
+  'EUROPEAN', 'European', 'european',
+  'ISO', 'iso', 'REGULAR', 'Regular', 'regular',
+  'JULIAN', 'Julian', 'julian',
+  'NEWSHAM', 'Newsham', 'newsham',
+  'THOUSAND', 'Thousand', 'thousand',
+  '%j', '%J', '%n', '%N', '%t', '%T',
+]);
 
 // reference: https://bitbucket.org/pigknowsdev/documentation/src/master/product%20specs/DATE_FORMATS.md
 
@@ -217,20 +229,30 @@ export function convertDateToRegularString(
   if (!date) {
     return '';
   }
-  let dateStr = date.toString().replace(/[^a-zA-Z0-9]/g, '');
+  const rawDate = date.toString();
+  let dateStr = rawDate.replace(/[^a-zA-Z0-9]/g, '');
+  if (NUMERIC_INPUT_FORMATS.has(inputFormat) && /\D/.test(dateStr)) {
+    // parseInt would stop at the letter and read the rest of the slice as a different date
+    return 'INVALID DATE';
+  }
+  // Year-first entry in an American or European field must be exactly yyyy-MM-dd; anything
+  // else shaped like it is refused rather than reread through the MMddyyyy / ddMMyyyy digits.
+  const regularMatch = REGULAR_DATE_PATTERN.exec(rawDate);
+  const looksYearFirst = rawDate.length === 10 && rawDate[4] === '-';
   const dateConfigObj: DateObjectUnits = {};
   switch (inputFormat) {
     case 'AMERICAN':
     case 'American':
     case 'american':
-      if (dateStr.length !== 8) {
-        dateStr = convertShortcutDate('AMERICAN', dateStr, daysAheadAllowed).replace(/\D/g, '');
-      } else if (date.length === 10 && (date[4] === '-')) {
-        // regular format was entered. convert.
-        dateConfigObj.month = parseInt(date.slice(5, 7));
-        dateConfigObj.day = parseInt(date.slice(8, 10));
-        dateConfigObj.year = parseInt(date.slice(0, 4));
+      if (regularMatch) {
+        dateConfigObj.year = Number(regularMatch[1]);
+        dateConfigObj.month = Number(regularMatch[2]);
+        dateConfigObj.day = Number(regularMatch[3]);
         break;
+      } else if (looksYearFirst) {
+        return 'INVALID DATE';
+      } else if (dateStr.length !== 8) {
+        dateStr = convertShortcutDate('AMERICAN', dateStr, daysAheadAllowed).replace(/\D/g, '');
       }
       dateConfigObj.month = parseInt(dateStr.slice(0, 2));
       dateConfigObj.day = parseInt(dateStr.slice(2, 4));
@@ -239,14 +261,15 @@ export function convertDateToRegularString(
     case 'EUROPEAN':
     case 'European':
     case 'european':
-      if (dateStr.length !== 8) {
-        dateStr = convertShortcutDate('European', dateStr, daysAheadAllowed).replace(/\D/g, '');
-      } else if (date.length === 10 && (date[4] === '-')) {
-        // regular format was entered. convert.
-        dateConfigObj.month = parseInt(date.slice(5, 7));
-        dateConfigObj.day = parseInt(date.slice(8, 10));
-        dateConfigObj.year = parseInt(date.slice(0, 4));
+      if (regularMatch) {
+        dateConfigObj.year = Number(regularMatch[1]);
+        dateConfigObj.month = Number(regularMatch[2]);
+        dateConfigObj.day = Number(regularMatch[3]);
         break;
+      } else if (looksYearFirst) {
+        return 'INVALID DATE';
+      } else if (dateStr.length !== 8) {
+        dateStr = convertShortcutDate('European', dateStr, daysAheadAllowed).replace(/\D/g, '');
       }
       dateConfigObj.month = parseInt(dateStr.slice(2, 4));
       dateConfigObj.day = parseInt(dateStr.slice(0, 2));
@@ -485,6 +508,9 @@ export function convertShortcutDate(
   date: string,
   daysAheadAllowed?: number,
 ) {
+  if (/[a-zA-Z]/.test(date.toString())) {
+    throw new Error(`${date} does not match '${formatType.toUpperCase()}' format or any of its shortcuts.`);
+  }
   const inputDate = date.toString().replace(/\D/g, '');
   const currentYear = (new Date()).getFullYear();
   const currentYearEnd = currentYear.toString().slice(2);
